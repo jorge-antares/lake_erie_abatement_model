@@ -1,0 +1,8 @@
+clarabel==0.10.0
+cvxpy==1.6.2
+numpy==2.2.3
+osqp==0.6.7.post3
+qdldl==0.1.7.post5
+scipy==1.15.2
+PySCIPOpt==5.4.1
+pandas==2.2.3
