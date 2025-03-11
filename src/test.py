@@ -43,6 +43,7 @@ def test_modelAlt():
 
 
 if __name__ == "__main__":
+    print("\n\n\n")
     print("*" * 40)
     print("TEST MODEL 1")
     print("*" * 40)

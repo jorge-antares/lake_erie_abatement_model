@@ -4,6 +4,4 @@ setup:
 test:
 	/bin/zsh test.sh
 
-setupandtest:
-	setup
-	test
+setuptest: setup test
