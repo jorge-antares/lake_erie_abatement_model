@@ -21,11 +21,8 @@ s.t.
 
 import cvxpy
 
-from numpy import array
-from funcs import getModelParams
 
-
-def solveModel(ztarget, params):
+def solveModel(ztarget, params: dict) -> cvxpy.Problem:
     # DECISION VARIABLES
     x = cvxpy.Variable(shape=params["n_regions"], name="x")
     w = cvxpy.Variable(shape=params["n_wwtps"], integer=True, name="w")
@@ -54,7 +51,7 @@ def solveModel(ztarget, params):
         ):
             print(reg, f"\t{round(entry,2)}")
 
-        print("\nConcentration [ppb/year]\tResponse ∆Load")
+        print("\nConcentration [ppb/year]\tResponse ∆ Load")
         zopt = params["S"] @ x.value + params["W"] @ w.value
         for reg, entry in zip(params["region_names"], zopt):
             deltaz = round(entry * params["volume_km3"][reg], 4)
@@ -69,7 +66,7 @@ def solveModel(ztarget, params):
     return model
 
 
-def saveResults(model, params, filename):
+def saveResults(model, params: dict, filename: str) -> bool:
     x = model.variables()[0].value
     w = model.variables()[1].value
     load_w = params["L"] @ params["F"] @ w
@@ -97,25 +94,5 @@ def saveResults(model, params, filename):
     return True
 
 
-def main():
-    params = getModelParams()
-
-    # Target reduction in [ppb] P = [µg/L] P
-    ztarget = array(
-        [
-            0.0,  #   SCR
-            0.0,  #   LSC
-            0.0,  #   DR
-            0.0,  #   WB
-            212 / 318.7,  #   CB 212/318.7
-            0.0,  #   EB
-        ]
-    )
-    # Solution in [ton P /year]
-    sol = solveModel(ztarget, params)
-    saveResults(sol, params, "results/test")
-    return True
-
-
 if __name__ == "__main__":
-    main()
+    pass

@@ -20,12 +20,10 @@ s.t.
 """
 
 import cvxpy
-
 from numpy import array
-from funcs import getModelParams
 
 
-def solveModelAlt(budget, params):
+def solveModelAlt(budget: float, params: dict) -> cvxpy.Problem:
     # DECISION VARIABLES
     x = cvxpy.Variable(shape=params["n_regions"], name="x")
     w = cvxpy.Variable(shape=params["n_wwtps"], integer=True, name="w")
@@ -73,16 +71,5 @@ def solveModelAlt(budget, params):
     return output
 
 
-def main():
-    params = getModelParams()
-
-    # Budget in million CAD
-    budget = 500
-
-    # Solution in [ton P /year]
-    sol = solveModelAlt(budget, params)
-    return True
-
-
 if __name__ == "__main__":
-    main()
+    pass

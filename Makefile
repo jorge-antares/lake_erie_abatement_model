@@ -1,7 +1,10 @@
-setup:
+setup :
 	/bin/zsh setup.sh
 
-test:
-	/bin/zsh test.sh
+test :
+	./cvxenv/bin/python src/test.py
 
-setuptest: setup test
+run :
+	./cvxenv/bin/python main.py
+
+setuptest : setup test
