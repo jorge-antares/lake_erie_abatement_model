@@ -1,5 +1,5 @@
 setup :
-	/bin/zsh setup.sh
+	/bin/sh setup.sh
 
 test :
 	./cvxenv/bin/python src/test.py

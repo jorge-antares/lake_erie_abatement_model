@@ -1,6 +1,6 @@
 # Lake Erie Abatement Optimization #
 
-We present an optimization model for the Canadian side of Lake Erie (LE) that determines the required abatement level of total phosphorus (TP), targeting agricultural activities and additional investments in end-of-pipe technologies in wastewater treatment plants across the Canadian LE watersheds, such that a target reduction in P concentration is achieved at the lowest cost.
+We present an optimization model for the Canadian side of Lake Erie (LE) that determines the required abatement of total phosphorus (TP) on agricultural activities or end-of-pipe investments in wastewater treatment plants across the Canadian LE watersheds, such that a target reduction in P concentration is achieved at the lowest cost.
 
 The hydrological model used in this study considers the interdependence among six regions: St. Claire River and Lake, the Detroit River, and the Western, Central and Eastern Basins of LE.
 
@@ -10,8 +10,11 @@ The optimization model is:
 $$\min_{x,w}\quad x^T A x + b^T w$$
 
 subject to:
+
 $$Sx + Ww ≥ z_{\rm Target}$$
+
 $$x \geq 0$$
+
 $$w_i \in \{0,1\}\quad \forall\ i$$
 
 and its parameters are:
@@ -29,7 +32,10 @@ This model has the same variables and parameters as Model I but has an additiona
 $$\max_{x,w}\quad \alpha^{\rm T} \big( Sx + Ww \big)$$
 
 subject to:
+
 $$x^{T} A x + b^{T} w  \leq \text{budget}$$
+
 $$x \geq 0$$
+
 $$w_{i} \in \{0,1\}\quad \forall i.$$
 

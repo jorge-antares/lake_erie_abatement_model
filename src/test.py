@@ -9,8 +9,7 @@ Testing script.
 
 from numpy import array
 from funcs import getModelParams
-from eriemodel import solveModel
-from eriemodelAlt import solveModelAlt
+from eriemodel import solveModel, solveModelAlt
 
 
 def test_model():

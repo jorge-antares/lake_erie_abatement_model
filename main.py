@@ -9,8 +9,7 @@ Code to run models.
 
 from numpy import array
 from src.funcs import getModelParams
-from src.eriemodel import solveModel, saveResults
-from src.eriemodelAlt import solveModelAlt
+from src.eriemodel import solveModel, solveModelAlt, saveResults
 
 
 def runModel1():
