@@ -15,11 +15,11 @@ $$Sx + Ww ≥ z_{\rm Target}$$
 
 $$x \geq 0$$
 
-$$w_i \in \{0,1\}\quad \forall\ i$$
+$$w_i \in \big\{0,1\big\}\quad \forall\ i$$
 
 and its parameters are:
 
-- $A$: diagonal matrix of size $R \times R$ containing the quadratic terms of the cost function in equation 4 in [CAD year/$t^2$].
+- $A$: diagonal matrix of size $R \times R$ containing the quadratic terms of the cost function in equation 4 in $[CAD year/t^2].
 - $S$: the system matrix of equation 1 in [$10^{-15}$ year/L].
 - $z_{\rm Target}$: the target concentration reduction in [ppb].
 - $b_i$: the annual maintenance and annual prorated net present value of the investment of installing the filter on WWTP i for a period of one year considering a filter lifetime of T years in [CAD/year].
