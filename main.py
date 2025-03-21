@@ -51,4 +51,4 @@ def runModel2():
 
 if __name__ == "__main__":
     runModel1()
-    # runModel2()
+    runModel2()
