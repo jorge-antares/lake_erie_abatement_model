@@ -8,8 +8,8 @@ Code to run models.
 """
 
 from numpy import array
-from src.funcs import getModelParams
-from src.eriemodel import solveModel, solveModelAlt, saveResults
+from erieparams import getModelParams
+from basemodels import solveModel, solveModelAlt, saveResults
 
 
 def runModel1():

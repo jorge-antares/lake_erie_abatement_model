@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Lake Erie Optimization - Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="text-center mb-5">
+            <h1 class="display-4 text-dark">Lake Erie Abatement Model</h1>
+            <br><br>
+            <p class="lead">The Lake Erie Abatement Model (LEAM) is a phosphorus abatement optimization model for the Lake Erie basins. This tool helps optimize agricultural and wastewater treatment investments to reduce phosphorus concentrations in Lake Erie.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-calculator"></i> Model Overview
+                        </h5>
+                        <p class="card-text">
+                            The optimization model minimizes the cost of phosphorus abatement while meeting target concentration reductions across six Lake Erie regions.
+                        </p>
+                        <ul class="list-unstyled">
+                            <li><strong>Decision Variables:</strong></li>
+                            <li>• Agricultural abatement (x)</li>
+                            <li>• WWTP investments (w)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-geo-alt"></i> Lake Erie Regions
+                        </h5>
+                        <p class="card-text">
+                            The model covers six regions of Lake Erie:
+                        </p>
+                        <ul class="list-unstyled">
+                            <li>• SCR - St. Clair River</li>
+                            <li>• LSC - Lake St. Clair</li>
+                            <li>• DR - Detroit River</li>
+                            <li>• WB - Western Basin</li>
+                            <li>• CB - Central Basin</li>
+                            <li>• EB - Eastern Basin</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="/optimize" class="btn btn-primary btn-lg">
+                <i class="bi bi-play-circle"></i> Start Optimization
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

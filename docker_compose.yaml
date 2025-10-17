@@ -1,0 +1,12 @@
+# Docker Compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
+# Example repository at
+# https://github.com/docker/awesome-compose
+
+services:
+  server:
+    build:
+      context: .
+    ports:
+      - 8000:8000
+

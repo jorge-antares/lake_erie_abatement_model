@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Optimization Results{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <h2 class="text-center mb-4">Optimization Results</h2>
+        
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">Error!</h4>
+            <p>{{ error }}</p>
+        </div>
+        {% else %}
+        
+        <!-- Model Information -->
+        <div class="results-section">
+            <h4 class="text-primary mb-3">Model Information</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Model Type:</strong> {{ model_info.type }}</p>
+                    <p><strong>Status:</strong> <span class="badge bg-success">{{ model_info.status }}</span></p>
+                </div>
+                <div class="col-md-6">
+                    {% if model_info.type == "Target-Based" %}
+                    <p><strong>Total Cost:</strong> ${{ "%.2f"|format(model_info.objective) }} million CAD/year</p>
+                    {% else %}
+                    <p><strong>Objective Value:</strong> {{ "%.4f"|format(model_info.objective) }}</p>
+                    <p><strong>Budget Used:</strong> ${{ model_info.budget }} million CAD</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Agricultural Abatement -->
+        <div class="results-section">
+            <h4 class="text-primary mb-3">Agricultural Abatement</h4>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Region</th>
+                            <th>Abatement (tonnes P/year)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for region, value in results.agricultural_abatement.items() %}
+                        <tr>
+                            <td><strong>{{ region }}</strong></td>
+                            <td>{{ "%.2f"|format(value) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- WWTP Results -->
+        <div class="results-section">
+            <h4 class="text-primary mb-3">Wastewater Treatment Plant Results</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>WWTP Investments Needed</h6>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Region</th>
+                                    <th>Number of WWTPs</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for region, value in results.wwtp_investments.items() %}
+                                <tr>
+                                    <td><strong>{{ region }}</strong></td>
+                                    <td>{{ value }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6>WWTP Abatement</h6>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Region</th>
+                                    <th>Abatement (tonnes P/year)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for region, value in results.wwtp_abatement.items() %}
+                                <tr>
+                                    <td><strong>{{ region }}</strong></td>
+                                    <td>{{ "%.2f"|format(value) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Concentration Changes -->
+        <div class="results-section">
+            <h4 class="text-primary mb-3">Concentration Changes</h4>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Region</th>
+                            <th>Concentration Reduction (ppb)</th>
+                            <th>Load Reduction (tonnes P/year)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for region in results.concentration_changes.keys() %}
+                        <tr>
+                            <td><strong>{{ region }}</strong></td>
+                            <td>{{ "%.4f"|format(results.concentration_changes[region]) }}</td>
+                            <td>{{ "%.4f"|format(results.load_changes[region]) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="results-section">
+            <h4 class="text-primary mb-3">Summary</h4>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Agricultural Abatement</h5>
+                            <p class="card-text display-6">{{ "%.1f"|format(results.total_agro_abatement) }}</p>
+                            <small class="text-muted">tonnes P/year</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Total WWTP Abatement</h5>
+                            <p class="card-text display-6">{{ "%.1f"|format(results.total_wwtp_abatement) }}</p>
+                            <small class="text-muted">tonnes P/year</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Total WWTPs</h5>
+                            <p class="card-text display-6">{{ results.total_wwtps }}</p>
+                            <small class="text-muted">facilities</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% endif %}
+
+        <div class="text-center mt-4">
+            <a href="/optimize" class="btn btn-primary btn-lg">
+                <i class="bi bi-arrow-repeat"></i> Run Another Optimization
+            </a>
+            <a href="/" class="btn btn-secondary btn-lg ms-3">
+                <i class="bi bi-house"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

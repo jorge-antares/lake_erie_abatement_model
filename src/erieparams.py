@@ -7,7 +7,6 @@ This script contains model parameters.
 """
 
 import pandas as pd
-import os
 from numpy import diag, array, ones
 
 
@@ -23,7 +22,7 @@ def getModelParams():
     L, E = getMatrixAndVector()
     P_ppm = 2.737  # mg/L
     factor = 1e-3  # converts mg/L to t/thousand m3: [1e9 mg = 1 t] [1e3 L = 1 m3]
-    filter_eff = 0.4  # unitless
+    filter_eff = 0.4  # unitless (API changeable)
     F = (
         P_ppm * factor * filter_eff * diag(E.reshape(-1))
     )  # [filter eff] * [t/thousand m3]] * [thousand m3/year] = [t/year]
@@ -42,7 +41,7 @@ def getModelParams():
         * 1e-3
     )
     W = S @ L @ F
-    # Agriculture abatement
+    # Agriculture abatement  (API changeable)
     a = array(
         [
             (0.004) * 7.20,  #  SCR
@@ -54,9 +53,9 @@ def getModelParams():
         ]
     )
     A = diag(a)
-    # Positive externality
+    # Positive externality  (API changeable)
     c = 1.0e-3 * ones(regions)  # million CAD / ppb
-    # WWTP costs
+    # WWTP costs  (API changeable)
     maintenance_cost = 1e-4  # million CAD / (thousand m3 * year)
     b = maintenance_cost * E.reshape(-1)
 

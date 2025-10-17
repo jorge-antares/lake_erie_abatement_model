@@ -17,13 +17,14 @@ s.t.
     w binary
     W = (S*L*F)
 
+October 2025
 """
 
 import cvxpy
 from numpy import array
 
 
-def solveModel(ztarget, params: dict) -> cvxpy.Problem:
+def solveModel(ztarget:array, params: dict) -> cvxpy.Problem:
     """
         DECISION VARIABLES
         x - Agro abatement by region (metric tonnes per year)
@@ -81,7 +82,7 @@ def solveModel(ztarget, params: dict) -> cvxpy.Problem:
     return model
 
 
-def saveResults(model, params: dict, filename: str) -> bool:
+def saveResults(model: cvxpy.Problem, params: dict, filename: str) -> bool:
     x = model.variables()[0].value
     w = model.variables()[1].value
     load_w = params["L"] @ params["F"] @ w

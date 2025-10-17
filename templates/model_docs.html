@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Mathematical Model Documentation{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-5">Lake Erie Abatement Optimization Model</h1>
+    
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            
+            <h2>Model Overview</h2>
+            <p>The Lake Erie Abatement Optimization model addresses phosphorus pollution through two complementary approaches:</p>
+            
+            <h3>1. Target-Based Optimization</h3>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Objective Function:</h5>
+                    $$\min f(\mathbf{x}, \mathbf{w}) = \mathbf{x}^T \mathbf{A} \mathbf{x} + \mathbf{b}^T \mathbf{w}$$
+                    
+                    <h5>Subject to:</h5>
+                    $$\mathbf{S} \mathbf{x} + \mathbf{W} \mathbf{w} \geq \mathbf{z}_{target}$$
+                    $$\mathbf{x} \geq 0$$
+                    $$\mathbf{w} \in \{0,1\}^{n_{WWTP}}$$
+                    
+                    <h5>Where:</h5>
+                    $$\mathbf{W} = \mathbf{S} \mathbf{L} \mathbf{F}$$
+                </div>
+            </div>
+            
+            <h3>2. Budget-Constrained Optimization</h3>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Objective Function:</h5>
+                    $$\max g(\mathbf{x}, \mathbf{w}) = \mathbf{c}^T (\mathbf{S} \mathbf{x} + \mathbf{W} \mathbf{w})$$
+                    
+                    <h5>Subject to:</h5>
+                    $$\mathbf{x}^T \mathbf{A} \mathbf{x} + \mathbf{b}^T \mathbf{w} \leq B$$
+                    $$\mathbf{x} \geq 0$$
+                    $$\mathbf{w} \in \{0,1\}^{n_{WWTP}}$$
+                </div>
+            </div>
+            
+            <h2>Variable Definitions</h2>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Variable</th>
+                            <th>Description</th>
+                            <th>Units</th>
+                            <th>Dimension</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>$\mathbf{x}$</td>
+                            <td>Agricultural abatement by region</td>
+                            <td>tonnes/year</td>
+                            <td>$\mathbb{R}^{n_{regions}}_+$</td>
+                        </tr>
+                        <tr>
+                            <td>$\mathbf{w}$</td>
+                            <td>Binary variables for WWTP investments</td>
+                            <td>unitless</td>
+                            <td>$\{0,1\}^{n_{WWTP}}$</td>
+                        </tr>
+                        <tr>
+                            <td>$\mathbf{A}$</td>
+                            <td>Agricultural cost matrix (quadratic)</td>
+                            <td>CAD·year/tonne²</td>
+                            <td>$\mathbb{R}^{n_{regions} \times n_{regions}}$</td>
+                        </tr>
+                        <tr>
+                            <td>$\mathbf{b}$</td>
+                            <td>WWTP maintenance costs</td>
+                            <td>Million CAD/year</td>
+                            <td>$\mathbb{R}^{n_{WWTP}}$</td>
+                        </tr>
+                        <tr>
+                            <td>$\mathbf{S}$</td>
+                            <td>Agricultural effectiveness matrix</td>
+                            <td>ppb·year/tonne</td>
+                            <td>$\mathbb{R}^{n_{regions} \times n_{regions}}$</td>
+                        </tr>
+                        <tr>
+                            <td>$\mathbf{L}$</td>
+                            <td>WWTP location matrix</td>
+                            <td>unitless</td>
+                            <td>$\mathbb{R}^{n_{regions} \times n_{WWTP}}$</td>
+                        </tr>
+                        <tr>
+                            <td>$\mathbf{F}$</td>
+                            <td>WWTP effectiveness matrix</td>
+                            <td>tonnes/year</td>
+                            <td>$\mathbb{R}^{n_{WWTP} \times n_{WWTP}}$</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <h2>Lake Erie Regions</h2>
+            <p>The model considers six distinct regions of the Lake Erie system:</p>
+            <ol>
+                <li><strong>SCR</strong> - St. Clair River</li>
+                <li><strong>LSC</strong> - Lake St. Clair</li>
+                <li><strong>DR</strong> - Detroit River</li>
+                <li><strong>WB</strong> - Western Basin</li>
+                <li><strong>CB</strong> - Central Basin</li>
+                <li><strong>EB</strong> - Eastern Basin</li>
+            </ol>
+            
+            <div class="text-center mt-4">
+                <a href="/optimize" class="btn btn-primary btn-lg">
+                    <i class="bi bi-calculator"></i> Run Optimization
+                </a>
+                <a href="/" class="btn btn-secondary btn-lg ms-3">
+                    <i class="bi bi-house"></i> Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
