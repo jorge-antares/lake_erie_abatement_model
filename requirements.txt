@@ -1,8 +1,0 @@
-cvxpy==1.6.2
-PySCIPOpt==5.4.1
-pandas==2.2.3
-numpy
-fastapi
-uvicorn
-jinja2
-python-multipart

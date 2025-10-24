@@ -7,14 +7,21 @@ This script contains model parameters.
 """
 
 import pandas as pd
+from pathlib import Path
 from numpy import diag, array, ones
 
 
 def getMatrixAndVector():
-    return (
-        pd.read_csv("inputdata/Lmat.csv").values.T,
-        pd.read_csv("inputdata/fvec.csv").values,
-    )
+    base_dir = Path(__file__).resolve().parent / "wwtpdata"
+    lmat_path = base_dir / "Lmat.csv"
+    fvec_path = base_dir / "fvec.csv"
+
+    if not lmat_path.exists() or not fvec_path.exists():
+        raise FileNotFoundError(
+            f"Required CSV files not found. Checked:\n  {lmat_path}\n  {fvec_path}"
+        )
+
+    return pd.read_csv(lmat_path).values.T, pd.read_csv(fvec_path).values
 
 
 def getModelParams():

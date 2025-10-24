@@ -1,0 +1,18 @@
+[DEFAULT]
+# Ban settings
+bantime = 3600
+findtime = 600
+maxretry = 5
+backend = auto
+usedns = warn
+destemail = admin@example.com
+sendername = Fail2Ban
+action = %(action_)s
+
+# Log settings
+loglevel = INFO
+logtarget = /data/fail2ban.log
+
+# Database
+dbfile = /data/fail2ban.sqlite3
+dbpurgeage = 30d

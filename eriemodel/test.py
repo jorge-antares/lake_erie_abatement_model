@@ -8,8 +8,8 @@ Testing script.
 """
 
 from numpy import array
-from funcs import getModelParams
-from eriemodel import solveModel, solveModelAlt
+from erieparams import getModelParams
+from basemodels import solveModel, solveModelAlt
 
 
 def test_model():
@@ -46,9 +46,9 @@ if __name__ == "__main__":
     print("*" * 40)
     print("TEST MODEL 1")
     print("*" * 40)
-    test_model()
+    print(getModelParams())
     print("\n\n\n")
     print("+" * 40)
     print("TEST MODEL 2")
     print("+" * 40)
-    test_modelAlt()
+    #test_modelAlt()

@@ -38,6 +38,11 @@ app = FastAPI(title="Lake Erie Abatement Optimization", version="1.0.0")
 # Setup templates
 templates = Jinja2Templates(directory="templates")
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring"""
+    return {"status": "healthy", "service": "lake_erie_optimization"}
+
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     """Home page with model overview"""
