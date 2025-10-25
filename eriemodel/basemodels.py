@@ -1,15 +1,20 @@
 """
 ================================================
-        Lake Erie Abatement Optimization
+            Lake Erie Abatement Model
 ================================================
 
-Main optimization model.
+October 2025
+
+This script contains the core model functions of
+the Lake Erie abatement optimization model.
 
 DECISION VARIABLES
     x - Agro abatement by region (metric tonnes per year)
-    w - Vector of binary variuables (unitless)
+    w - Binary vector where w[i] = 1 if WWTP i is upgraded,
+        0 otherwise (unitless)
 
-MODEL
+    
+TARGET-BASED MODEL
     min x^T A x + b^T w
 s.t.
     S x + W w >= z_target
@@ -17,14 +22,23 @@ s.t.
     w binary
     W = (S*L*F)
 
-October 2025
+    
+BUDGET-BASED MODEL
+    max c^T ( S x + W w )
+s.t.
+    x^T A x + b^T w <= budget
+    x >= 0
+    w binary
+    W = (S*L*F)
+
+================================================
 """
 
 import cvxpy
 from numpy import array
 
 
-def solveModel(ztarget:array, params: dict) -> cvxpy.Problem:
+def solveTBModel(ztarget:list, fixed_params: dict, calculated_params: dict) -> cvxpy.Problem:
     """
         DECISION VARIABLES
         x - Agro abatement by region (metric tonnes per year)
@@ -39,6 +53,9 @@ def solveModel(ztarget:array, params: dict) -> cvxpy.Problem:
         W = (S*L*F)
 
     """
+    params = {**fixed_params, **calculated_params}
+    ztarget = array(ztarget)
+
     # DECISION VARIABLES
     x = cvxpy.Variable(shape=params["n_regions"], name="x")
     w = cvxpy.Variable(shape=params["n_wwtps"], integer=True, name="w")
@@ -110,7 +127,7 @@ def saveResults(model: cvxpy.Problem, params: dict, filename: str) -> bool:
     return True
 
 
-def solveModelAlt(budget: float, params: dict) -> cvxpy.Problem:
+def solveBBModel(budget: float, fixed_params: dict, calculated_params: dict) -> cvxpy.Problem:
     """
         DECISION VARIABLES
         x - Agro abatement by region (metric tonnes per year)
@@ -124,6 +141,8 @@ def solveModelAlt(budget: float, params: dict) -> cvxpy.Problem:
         w binary
         W = (S*L*F)
     """
+    params = {**fixed_params, **calculated_params}
+
     # DECISION VARIABLES
     x = cvxpy.Variable(shape=params["n_regions"], name="x")
     w = cvxpy.Variable(shape=params["n_wwtps"], integer=True, name="w")

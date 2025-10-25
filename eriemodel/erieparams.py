@@ -1,9 +1,14 @@
 """
 ================================================
-        Lake Erie Abatement Optimization
+            Lake Erie Abatement Model
 ================================================
 
-This script contains model parameters.
+October 2025
+
+This script contains the parameters of the Lake
+Erie abatement model.
+
+================================================
 """
 
 import pandas as pd
@@ -11,7 +16,15 @@ from pathlib import Path
 from numpy import diag, array, ones
 
 
-def getMatrixAndVector():
+def getFixedParameters() -> dict:
+    """
+    Reads L matrix and fvec vector from CSV files.
+    
+    Returns:
+        L: array     Matrix that assigns WWTPs to regions. 
+        fvec: array  Vector of WWTP annual flow rates.
+        S: array     Matrix of sedimentation rates.
+    """
     base_dir = Path(__file__).resolve().parent / "wwtpdata"
     lmat_path = base_dir / "Lmat.csv"
     fvec_path = base_dir / "fvec.csv"
@@ -20,22 +33,10 @@ def getMatrixAndVector():
         raise FileNotFoundError(
             f"Required CSV files not found. Checked:\n  {lmat_path}\n  {fvec_path}"
         )
-
-    return pd.read_csv(lmat_path).values.T, pd.read_csv(fvec_path).values
-
-
-def getModelParams():
-    regions = 6
-    L, E = getMatrixAndVector()
-    P_ppm = 2.737  # mg/L
-    factor = 1e-3  # converts mg/L to t/thousand m3: [1e9 mg = 1 t] [1e3 L = 1 m3]
-    filter_eff = 0.4  # unitless (API changeable)
-    F = (
-        P_ppm * factor * filter_eff * diag(E.reshape(-1))
-    )  # [filter eff] * [t/thousand m3]] * [thousand m3/year] = [t/year]
-    wwtps = F.shape[0]
-    S = (
-        array(
+    
+    L, fvec = pd.read_csv(lmat_path).values.T, pd.read_csv(fvec_path).values
+    
+    S = array(
             [
                 [6.25, 0.00, 0.00, 0.00, 0.00, 0.00],
                 [4.92, 4.92, 0.00, 0.00, 0.00, 0.00],
@@ -44,40 +45,12 @@ def getModelParams():
                 [0.73, 0.73, 0.90, 0.90, 1.48, 0.00],
                 [0.36, 0.36, 0.44, 0.44, 0.73, 1.30],
             ]
-        )
-        * 1e-3
-    )
-    W = S @ L @ F
-    # Agriculture abatement  (API changeable)
-    a = array(
-        [
-            (0.004) * 7.20,  #  SCR
-            (0.004) * 0.61,  #  LCS
-            (0.004) * 15.5,  #   DR
-            (0.004) * 9.24,  #   WB
-            (0.004) * 2.23,  #   CB
-            (0.004) * 0.77,  #   EB
-        ]
-    )
-    A = diag(a)
-    # Positive externality  (API changeable)
-    c = 1.0e-3 * ones(regions)  # million CAD / ppb
-    # WWTP costs  (API changeable)
-    maintenance_cost = 1e-4  # million CAD / (thousand m3 * year)
-    b = maintenance_cost * E.reshape(-1)
+    ) * 1e-3
 
     return {
         "region_names": ["SCR", "LSC", "DR", "WB", "CB", "EB"],
-        "n_regions": regions,
-        "n_wwtps": wwtps,
-        "E": E,
-        "F": F,
-        "L": L,
-        "S": S,
-        "W": W,
-        "A": A,
-        "b": b,
-        "c": c,
+        "n_wwtps": L.shape[1],
+        "n_regions": 6,
         "volume_km3": {
             "SCR": 0.4,
             "LSC": 4.6,
@@ -86,6 +59,45 @@ def getModelParams():
             "CB": 318.7,
             "EB": 159.3,
         },
+        "fvec": fvec,
+        "S": S,
+        "L": L
+    }
+
+
+def getCalculatedParams(
+        fixed_params:dict,
+        P_ppm:float = 2.737,            # P concentration in WWTP [mg/L]
+        filter_eff:float = 0.4,         # unitless
+        maintenance_cost:float = 1e-4,  # [million CAD / (thousand m3 * year)]
+        positive_ext:list = [1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3],       # [million CAD / t-year]
+        agro_abatecost:list = [2.88e-2, 2.44e-3, 6.2e-2, 3.69e-2, 8.92e-3, 3.08e-3] # [million CAD / t-year]
+        ) -> dict:
+    """
+    Agriculture abatement default cost matrix A
+    A = diag(array(
+        [
+            (0.004) * 7.20,  #  SCR
+            (0.004) * 0.61,  #  LCS
+            (0.004) * 15.5,  #   DR
+            (0.004) * 9.24,  #   WB
+            (0.004) * 2.23,  #   CB
+            (0.004) * 0.77,  #   EB
+        ]
+    ))
+    """
+    # Factor that converts mg/L to t/thousand m3: [1e9 mg = 1 t] [1e3 L = 1 m3]
+    factor = 1e-3
+
+    # Emissions: [filter eff] * [t/thousand m3]] * [thousand m3/year] = [t/year]
+    F = P_ppm * factor * filter_eff * diag(fixed_params["fvec"].reshape(-1))
+    
+    return {
+        "b": maintenance_cost * fixed_params["fvec"].reshape(-1),
+        "W": fixed_params["S"] @ fixed_params["L"] @ F,
+        "A": diag(array(agro_abatecost)),
+        "c": array(positive_ext),
+        "F": F
     }
 
 

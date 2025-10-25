@@ -10,10 +10,7 @@ logs/
 # Fail2ban data
 fail2ban/data/
 
-# SSL certificates (don't commit private keys)
+# SSL certificates
 nginx/ssl/*.pem
 nginx/ssl/*.key
 
-# Environment files
-.env
-.env.local

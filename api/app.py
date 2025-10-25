@@ -4,44 +4,31 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import numpy as np
 from typing import Optional
-import sys
-import os
 
-# Add src directory to Python path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, 'src')
-sys.path.insert(0, src_dir)
 
-try:
-    from basemodels import solveModel, solveModelAlt
-    from erieparams import getModelParams
-except ImportError as e:
-    print(f"Import error: {e}")
-    # Fallback for development
-    import importlib.util
-    
-    basemodels_path = os.path.join(src_dir, 'basemodels.py')
-    spec = importlib.util.spec_from_file_location("basemodels", basemodels_path)
-    basemodels = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(basemodels)
-    solveModel = basemodels.solveModel
-    solveModelAlt = basemodels.solveModelAlt
-    
-    erieparams_path = os.path.join(src_dir, 'erieparams.py')
-    spec = importlib.util.spec_from_file_location("erieparams", erieparams_path)
-    erieparams = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(erieparams)
-    getModelParams = erieparams.getModelParams
+from eriemodel.basemodels import solveBBModel, solveTBModel
+from eriemodel.erieparams import getFixedParameters, getCalculatedParams
 
-app = FastAPI(title="Lake Erie Abatement Optimization", version="1.0.0")
+app = FastAPI(
+    title="Lake Erie Phosphorus Abatement Model API",
+    version="1.0.0"
+)
 
 # Setup templates
 templates = Jinja2Templates(directory="templates")
 
+# Optional: Mount static files if you have CSS/JS/images
+# app.mount("/static", StaticFiles(directory=str(settings.STATIC_DIR)), name="static")
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint for monitoring"""
-    return {"status": "healthy", "service": "lake_erie_optimization"}
+    return {
+        "status": "healthy",
+        "service": "lake_erie_optimization",
+        "version": "1.0.0"
+    }
+
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -69,34 +56,44 @@ async def run_optimization(
     # Advanced parameters
     filter_efficiency: float = Form(0.4),
     maintenance_cost: float = Form(0.0001),
-    agro_cost_factor: float = Form(0.004),
+    agro_cost_scr: float = Form(0.0288),
+    agro_cost_lsc: float = Form(0.00244),
+    agro_cost_dr: float = Form(0.062),
+    agro_cost_wb: float = Form(0.0369),
+    agro_cost_cb: float = Form(0.00892),
+    agro_cost_eb: float = Form(0.00308),
 ):
     """Run optimization and display results"""
     try:
-        # Get base model parameters
-        params = getModelParams()
+        # Get fixed parameters
+        fixed_params = getFixedParameters()
         
-        # Update parameters with user inputs
-        # Update filter efficiency
-        P_ppm = 2.737
-        factor = 1e-3
-        F = P_ppm * factor * filter_efficiency * np.diag(params["E"].reshape(-1))
-        params["F"] = F
-        params["W"] = params["S"] @ params["L"] @ F
+        # Prepare agriculture costs
+        agro_costs = [
+            agro_cost_scr,
+            agro_cost_lsc,
+            agro_cost_dr,
+            agro_cost_wb,
+            agro_cost_cb,
+            agro_cost_eb
+        ]
         
-        # Update maintenance costs
-        params["b"] = maintenance_cost * params["E"].reshape(-1)
+        # Get calculated parameters with user inputs
+        calc_params = getCalculatedParams(
+            fixed_params=fixed_params,
+            filter_eff=filter_efficiency,
+            maintenance_cost=maintenance_cost,
+            agro_abatecost=agro_costs
+        )
         
-        # Update agriculture costs
-        region_areas = [7.20, 0.61, 15.5, 9.24, 2.23, 0.77]  # From erieparams.py
-        a = np.array([agro_cost_factor * area for area in region_areas])
-        params["A"] = np.diag(a)
+        # Combine parameters
+        params = {**fixed_params, **calc_params}
         
         if model_type == "target":
             # Target-based optimization
             ztarget = np.array([target_scr, target_lsc, target_dr, target_wb, target_cb, target_eb])
             
-            model = solveModel(ztarget, params)
+            model = solveTBModel(ztarget, params)
             
             if model.status in ["infeasible", "unbounded"]:
                 return templates.TemplateResponse("results.html", {
@@ -112,7 +109,8 @@ async def run_optimization(
             load_w = params["L"] @ params["F"] @ w
             n_wwtp = params["L"] @ w
             zopt = params["S"] @ x + params["W"] @ w
-            zload = [i * j for i, j in zip(zopt, params["volume_km3"].values())]
+            volume_array = np.array([params["volume_km3"][region] for region in params["region_names"]])
+            zload = zopt * volume_array
             
             results = {
                 "agricultural_abatement": dict(zip(params["region_names"], x)),
@@ -133,7 +131,7 @@ async def run_optimization(
             
         else:  # budget model
             # Budget-based optimization
-            output = solveModelAlt(budget, params)
+            output = solveBBModel(budget, params)
             
             if not output or "obj" not in output:
                 return templates.TemplateResponse("results.html", {
@@ -141,12 +139,14 @@ async def run_optimization(
                     "error": "No feasible solution found for the given budget constraint."
                 })
             
+            volume_array = np.array([params["volume_km3"][region] for region in params["region_names"]])
+            
             results = {
                 "agricultural_abatement": dict(zip(params["region_names"], output["x"])),
                 "wwtp_abatement": dict(zip(params["region_names"], output["wabate"])),
                 "wwtp_investments": dict(zip(params["region_names"], output["w"].astype(int))),
                 "concentration_changes": dict(zip(params["region_names"], output["z"])),
-                "load_changes": dict(zip(params["region_names"], output["z"] * np.array(list(params["volume_km3"].values())))),
+                "load_changes": dict(zip(params["region_names"], output["z"] * volume_array)),
                 "total_agro_abatement": float(np.sum(output["x"])),
                 "total_wwtp_abatement": float(np.sum(output["wabate"])),
                 "total_wwtps": int(np.sum(output["w"]))
@@ -166,9 +166,12 @@ async def run_optimization(
         })
         
     except Exception as e:
+        import traceback
+        error_detail = traceback.format_exc()
         return templates.TemplateResponse("results.html", {
             "request": request,
-            "error": f"An error occurred during optimization: {str(e)}"
+            "error": f"An error occurred during optimization: {str(e)}",
+            "error_detail": error_detail
         })
 
 @app.get("/model-docs", response_class=HTMLResponse)
@@ -178,4 +181,8 @@ async def model_docs(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000
+    )

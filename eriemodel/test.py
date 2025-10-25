@@ -7,16 +7,17 @@ Testing script.
 
 """
 
-from numpy import array
-from erieparams import getModelParams
-from basemodels import solveModel, solveModelAlt
+from erieparams import getFixedParameters, getCalculatedParams
+from basemodels import solveTBModel, solveBBModel
+
+fixed_params = getFixedParameters()
+calculated_params = getCalculatedParams(fixed_params)
 
 
 def test_model():
-    params = getModelParams()
+    
     # Target reduction in [ppb] P = [µg/L] P
-    ztarget = array(
-        [
+    ztarget = [
             0.5,  #   SCR
             0.5,  #   LSC
             0.5,  #   DR
@@ -24,20 +25,14 @@ def test_model():
             0.5,  #   CB 212/318.7
             0.5,  #   EB
         ]
-    )
-    # Solution in [ton P /year]
-    sol = solveModel(ztarget, params)
+    sol = solveTBModel(ztarget, fixed_params, calculated_params)
     return True
 
 
 def test_modelAlt():
-    params = getModelParams()
-
     # Budget in million CAD
     budget = 500
-
-    # Solution in [ton P /year]
-    sol = solveModelAlt(budget, params)
+    sol = solveBBModel(budget, fixed_params, calculated_params)
     return True
 
 
@@ -46,9 +41,9 @@ if __name__ == "__main__":
     print("*" * 40)
     print("TEST MODEL 1")
     print("*" * 40)
-    print(getModelParams())
+    test_model()
     print("\n\n\n")
     print("+" * 40)
     print("TEST MODEL 2")
     print("+" * 40)
-    #test_modelAlt()
+    test_modelAlt()

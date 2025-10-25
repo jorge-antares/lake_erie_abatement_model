@@ -1,7 +1,9 @@
+
 services:
   server:
     build:
-      context: ./api
+      context: .
+      dockerfile: Dockerfile
     container_name: erie_app
     restart: unless-stopped
     networks:
@@ -9,11 +11,16 @@ services:
     expose:
       - "8000"
     volumes:
-      - ./logs:/app/logs
+      - ./api/logs:/app/logs
     environment:
       - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
-  
   nginx:
     image: nginx:alpine
     container_name: erie_nginx
@@ -24,14 +31,14 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./logs/nginx:/var/log/nginx
+      - ./nginx/logs:/var/log/nginx
       - ./nginx/ssl:/etc/nginx/ssl:ro
     networks:
       - erie_network
     depends_on:
-      - server
+      server:
+        condition: service_healthy
 
-  
   fail2ban:
     image: crazymax/fail2ban:latest
     container_name: erie_fail2ban
@@ -41,8 +48,9 @@ services:
       - NET_ADMIN
       - NET_RAW
     volumes:
-      - ./fail2ban/data:/data/config
-      - ./fail2ban/:/etc/fail2ban/config
+      - ./fail2ban/data:/data
+      - ./fail2ban/config:/etc/fail2ban/filter.d:ro
+      - ./fail2ban/config:/etc/fail2ban/jail.d:ro
       - ./nginx/logs:/var/log/nginx:ro
     environment:
       - TZ=America/Toronto
@@ -52,4 +60,3 @@ services:
 networks:
   erie_network:
     driver: bridge
-
