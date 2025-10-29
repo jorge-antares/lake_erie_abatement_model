@@ -72,32 +72,20 @@ def solveTBModel(ztarget:list, fixed_params: dict, calculated_params: dict) -> c
         ],
     )
     model.solve(solver="SCIP", verbose=False)
-
+    output = getResponseTemplate()
     if model.status not in ["infeasible", "unbounded"]:
-        print(f"\nCost:\t {model.value:.4g} millions per year")
-        print("\n∆ Load [t/year]:")
-        for reg, entry in zip(params["region_names"], x.value):
-            print(reg, f"\t{round(entry,2)}")
-
-        print("\n∆ Load WWTPs [t/year]:")
-        for reg, entry in zip(
-            params["region_names"], params["L"] @ params["F"] @ w.value
-        ):
-            print(reg, f"\t{round(entry,2)}")
-
-        print("\nConcentration [ppb/year]\tResponse ∆ Load")
-        zopt = params["S"] @ x.value + params["W"] @ w.value
-        for reg, entry in zip(params["region_names"], zopt):
-            deltaz = round(entry * params["volume_km3"][reg], 4)
-            print(reg, f"\t{round(entry,4)}\t\t\t{deltaz}")
-
-        print("\nWWTPs that need investment:")
-        www = params["L"] @ w.value
-        for j in range(len(www)):
-            print(params["region_names"][j], "\t", int(www[j]))
+        output["status"] = model.status
+        output["solution"]["obj"]["value"] = model.value
+        output["solution"]["x"]["value"] = x.value.tolist()
+        output["solution"]["z"]["value"] = (params["S"] @ x.value).tolist()
+        output["solution"]["w"]["value"] = [ int(entry) for entry in (params["L"] @ w.value).round()]
+        output["solution"]["wabate"]["value"] = (params["L"] @ params["F"] @ w.value).round(4).tolist()
+        output["solution"]["allw"]["value"] =  [int(entry) for entry in w.value.round()]
+        output["message"] = "Solution found."
+        print(f"SUCCESS - TBM\tObjFun: {model.value:.4g} |", time.strftime("%Y-%m-%d %H:%M:%S"))
     else:
-        print("No solution found... :(")
-    return model
+        print("FAIL - TBM", time.strftime("%Y-%m-%d %H:%M:%S"))
+    return output
 
 
 def saveResults(model: cvxpy.Problem, params: dict, filename: str) -> bool:
@@ -159,22 +147,21 @@ def solveBBModel(budget: float, fixed_params: dict, calculated_params: dict) -> 
             x >= 0,
         ],
     )
-    model.solve(solver="SCIP", verbose=True)
+    model.solve(solver="SCIP", verbose=False)
     output = getResponseTemplate()
     if model.status not in ["infeasible", "unbounded"]:
         output["status"] = model.status
         output["solution"]["obj"]["value"] = model.value
+        output["solution"]["obj"]["units"] = "ppb"
         output["solution"]["x"]["value"] = x.value.tolist()
         output["solution"]["z"]["value"] = (params["S"] @ x.value).tolist()
         output["solution"]["w"]["value"] = [ int(entry) for entry in (params["L"] @ w.value).round()]
         output["solution"]["wabate"]["value"] = (params["L"] @ params["F"] @ w.value).round(4).tolist()
         output["solution"]["allw"]["value"] =  [int(entry) for entry in w.value.round()]
         output["message"] = "Solution found."
-        runtime = model.solver_stats.solve_time
-        print(f"\nSolved in {runtime} seconds.")
-        print(f"Objective Value:\t {model.value:.4g} millions per year, solved at time", time.strftime("%Y-%m-%d %H:%M:%S"))
+        print(f"SUCCESS - BBM\tObjFun: {model.value:.4g} |", time.strftime("%Y-%m-%d %H:%M:%S"))
     else:
-        print("No solution found... :(, time now is", time.strftime("%Y-%m-%d %H:%M:%S"))
+        print("FAIL - BBM", time.strftime("%Y-%m-%d %H:%M:%S"))
     return output
 
 def getResponseTemplate() -> dict:

@@ -1,4 +1,4 @@
-cvxpy==1.6.2
+cvxpy==1.7.3
 PySCIPOpt==5.4.1
 pandas==2.3.3
 numpy==2.3.4

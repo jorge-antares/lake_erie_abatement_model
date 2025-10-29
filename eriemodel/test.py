@@ -34,18 +34,17 @@ def test_modelAlt():
     # Budget in million CAD
     budget = 500
     sol = solveBBModel(budget, fixed_params, calculated_params)
-    print(json.dumps(sol, indent=4))
+    #print(json.dumps(sol, indent=4))
     return True
 
 
 if __name__ == "__main__":
-    print("\n\n\n")
     print("*" * 40)
-    print("TEST MODEL 1")
+    print("TEST TARGET_BASED MODEL")
     print("*" * 40)
-    #test_model()
-    print("\n\n\n")
+    test_model()
+    print("\n\n")
     print("+" * 40)
-    print("TEST MODEL 2")
+    print("TEST BUDGET-BASED MODEL")
     print("+" * 40)
     test_modelAlt()

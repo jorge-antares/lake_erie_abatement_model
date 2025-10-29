@@ -11,6 +11,13 @@
         <div class="alert alert-danger" role="alert">
             <h4 class="alert-heading">Error!</h4>
             <p>{{ error }}</p>
+            {% if error_detail %}
+            <hr>
+            <details>
+                <summary>Technical Details (for debugging)</summary>
+                <pre class="mt-2">{{ error_detail }}</pre>
+            </details>
+            {% endif %}
         </div>
         {% else %}
         
@@ -24,9 +31,9 @@
                 </div>
                 <div class="col-md-6">
                     {% if model_info.type == "Target-Based" %}
-                    <p><strong>Total Cost:</strong> ${{ "%.2f"|format(model_info.objective) }} million CAD/year</p>
+                    <p><strong>Total Cost:</strong> ${{ "%.2f"|format(model_info.objective) }} {{ model_info.objective_units }}</p>
                     {% else %}
-                    <p><strong>Objective Value:</strong> {{ "%.4f"|format(model_info.objective) }}</p>
+                    <p><strong>Objective Value:</strong> {{ "%.4f"|format(model_info.objective) }} {{ model_info.objective_units }}</p>
                     <p><strong>Budget Used:</strong> ${{ model_info.budget }} million CAD</p>
                     {% endif %}
                 </div>

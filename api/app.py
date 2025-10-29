@@ -91,73 +91,58 @@ async def run_optimization(
         
         if model_type == "target":
             # Target-based optimization
-            ztarget = np.array([target_scr, target_lsc, target_dr, target_wb, target_cb, target_eb])
+            ztarget = [target_scr, target_lsc, target_dr, target_wb, target_cb, target_eb]
             
-            model = solveTBModel(ztarget, params)
+            output = solveTBModel(ztarget, fixed_params, calc_params)
             
-            if model.status in ["infeasible", "unbounded"]:
+            # Check if solution was found
+            if not output["status"] or output["status"] in ["infeasible", "unbounded"]:
                 return templates.TemplateResponse("results.html", {
                     "request": request,
-                    "error": f"No feasible solution found. Model status: {model.status}"
+                    "error": f"No feasible solution found. Status: {output.get('status', 'unknown')}. {output.get('message', '')}"
                 })
-            
-            # Extract results
-            x = model.variables[0].value  # Agricultural abatement
-            w = model.variables[1].value  # WWTP binary variables
-            
-            # Calculate derived results
-            load_w = params["L"] @ params["F"] @ w
-            n_wwtp = params["L"] @ w
-            zopt = params["S"] @ x + params["W"] @ w
-            volume_array = np.array([params["volume_km3"][region] for region in params["region_names"]])
-            zload = zopt * volume_array
-            
-            results = {
-                "agricultural_abatement": dict(zip(params["region_names"], x)),
-                "wwtp_abatement": dict(zip(params["region_names"], load_w)),
-                "wwtp_investments": dict(zip(params["region_names"], n_wwtp.astype(int))),
-                "concentration_changes": dict(zip(params["region_names"], zopt)),
-                "load_changes": dict(zip(params["region_names"], zload)),
-                "total_agro_abatement": float(np.sum(x)),
-                "total_wwtp_abatement": float(np.sum(load_w)),
-                "total_wwtps": int(np.sum(n_wwtp))
-            }
             
             model_info = {
                 "type": "Target-Based",
-                "status": model.status,
-                "objective": float(model.value)
+                "status": output["status"],
+                "objective": output["solution"]["obj"]["value"],
+                "objective_units": output["solution"]["obj"]["units"]
             }
             
         else:  # budget model
             # Budget-based optimization
-            output = solveBBModel(budget, params)
+            output = solveBBModel(budget, fixed_params, calc_params)
             
-            if not output or "obj" not in output:
+            # Check if solution was found
+            if not output["status"] or output["status"] in ["infeasible", "unbounded"]:
                 return templates.TemplateResponse("results.html", {
                     "request": request,
-                    "error": "No feasible solution found for the given budget constraint."
+                    "error": f"No feasible solution found. Status: {output.get('status', 'unknown')}. {output.get('message', '')}"
                 })
-            
-            volume_array = np.array([params["volume_km3"][region] for region in params["region_names"]])
-            
-            results = {
-                "agricultural_abatement": dict(zip(params["region_names"], output["x"])),
-                "wwtp_abatement": dict(zip(params["region_names"], output["wabate"])),
-                "wwtp_investments": dict(zip(params["region_names"], output["w"].astype(int))),
-                "concentration_changes": dict(zip(params["region_names"], output["z"])),
-                "load_changes": dict(zip(params["region_names"], output["z"] * volume_array)),
-                "total_agro_abatement": float(np.sum(output["x"])),
-                "total_wwtp_abatement": float(np.sum(output["wabate"])),
-                "total_wwtps": int(np.sum(output["w"]))
-            }
             
             model_info = {
                 "type": "Budget-Based",
-                "status": "optimal",
-                "objective": float(output["obj"]),
+                "status": output["status"],
+                "objective": output["solution"]["obj"]["value"],
+                "objective_units": output["solution"]["obj"]["units"],
                 "budget": budget
             }
+        
+        # Build unified results from output (works for both models)
+        volume_array = np.array([params["volume_km3"][region] for region in params["region_names"]])
+        z_values = np.array(output["solution"]["z"]["value"])
+        zload = z_values * volume_array
+        
+        results = {
+            "agricultural_abatement": dict(zip(params["region_names"], output["solution"]["x"]["value"])),
+            "wwtp_abatement": dict(zip(params["region_names"], output["solution"]["wabate"]["value"])),
+            "wwtp_investments": dict(zip(params["region_names"], output["solution"]["w"]["value"])),
+            "concentration_changes": dict(zip(params["region_names"], output["solution"]["z"]["value"])),
+            "load_changes": dict(zip(params["region_names"], zload.tolist())),
+            "total_agro_abatement": float(np.sum(output["solution"]["x"]["value"])),
+            "total_wwtp_abatement": float(np.sum(output["solution"]["wabate"]["value"])),
+            "total_wwtps": int(np.sum(output["solution"]["w"]["value"]))
+        }
         
         return templates.TemplateResponse("results.html", {
             "request": request,

@@ -1,6 +1,6 @@
 
 services:
-  server:
+  model:
     build:
       context: .
       dockerfile: Dockerfile
@@ -15,11 +15,10 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
 
   nginx:
     image: nginx:alpine
@@ -36,7 +35,7 @@ services:
     networks:
       - erie_network
     depends_on:
-      server:
+      model:
         condition: service_healthy
 
   fail2ban:
