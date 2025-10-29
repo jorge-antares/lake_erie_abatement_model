@@ -4,21 +4,26 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import numpy as np
 from typing import Optional
+import os
+import sys
 
-
-from eriemodel.basemodels import solveBBModel, solveTBModel
-from eriemodel.erieparams import getFixedParameters, getCalculatedParams
+try:
+    from eriemodel.basemodels import solveBBModel, solveTBModel
+    from eriemodel.erieparams import getFixedParameters, getCalculatedParams
+except ModuleNotFoundError:
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../eriemodel')))
+    from basemodels import solveBBModel, solveTBModel
+    from erieparams import getFixedParameters, getCalculatedParams
 
 app = FastAPI(
     title="Lake Erie Phosphorus Abatement Model API",
     version="1.0.0"
 )
 
-# Setup templates
+# Templates
 templates = Jinja2Templates(directory="templates")
-
-# Optional: Mount static files if you have CSS/JS/images
-# app.mount("/static", StaticFiles(directory=str(settings.STATIC_DIR)), name="static")
+# Static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/health")
 async def health_check():

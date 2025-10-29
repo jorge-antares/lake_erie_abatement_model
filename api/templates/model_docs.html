@@ -21,10 +21,10 @@
                     <h5>Subject to:</h5>
                     $$\mathbf{S} \mathbf{x} + \mathbf{W} \mathbf{w} \geq \mathbf{z}_{target}$$
                     $$\mathbf{x} \geq 0$$
-                    $$\mathbf{w} \in \{0,1\}^{n_{WWTP}}$$
+                    $$\mathbf{w} \in \{0,1\}^{n}$$
                     
                     <h5>Where:</h5>
-                    $$\mathbf{W} = \mathbf{S} \mathbf{L} \mathbf{F}$$
+                    $$\mathbf{W} = \mathbf{S} \times \mathbf{L} \times \mathbf{F}$$
                 </div>
             </div>
             
@@ -37,7 +37,7 @@
                     <h5>Subject to:</h5>
                     $$\mathbf{x}^T \mathbf{A} \mathbf{x} + \mathbf{b}^T \mathbf{w} \leq B$$
                     $$\mathbf{x} \geq 0$$
-                    $$\mathbf{w} \in \{0,1\}^{n_{WWTP}}$$
+                    $$\mathbf{w} \in \{0,1\}^{n}$$
                 </div>
             </div>
             
@@ -57,43 +57,43 @@
                             <td>$\mathbf{x}$</td>
                             <td>Agricultural abatement by region</td>
                             <td>tonnes/year</td>
-                            <td>$\mathbb{R}^{n_{regions}}_+$</td>
+                            <td>$\mathbb{R}^{m}_+$</td>
                         </tr>
                         <tr>
                             <td>$\mathbf{w}$</td>
                             <td>Binary variables for WWTP investments</td>
                             <td>unitless</td>
-                            <td>$\{0,1\}^{n_{WWTP}}$</td>
+                            <td>$\{0,1\}^{n}$</td>
                         </tr>
                         <tr>
                             <td>$\mathbf{A}$</td>
                             <td>Agricultural cost matrix (quadratic)</td>
                             <td>CAD·year/tonne²</td>
-                            <td>$\mathbb{R}^{n_{regions} \times n_{regions}}$</td>
+                            <td>$\mathbb{R}^{m \times m}$</td>
                         </tr>
                         <tr>
                             <td>$\mathbf{b}$</td>
                             <td>WWTP maintenance costs</td>
                             <td>Million CAD/year</td>
-                            <td>$\mathbb{R}^{n_{WWTP}}$</td>
+                            <td>$\mathbb{R}^{n}$</td>
                         </tr>
                         <tr>
                             <td>$\mathbf{S}$</td>
                             <td>Agricultural effectiveness matrix</td>
                             <td>ppb·year/tonne</td>
-                            <td>$\mathbb{R}^{n_{regions} \times n_{regions}}$</td>
+                            <td>$\mathbb{R}^{m \times m}$</td>
                         </tr>
                         <tr>
                             <td>$\mathbf{L}$</td>
                             <td>WWTP location matrix</td>
                             <td>unitless</td>
-                            <td>$\mathbb{R}^{n_{regions} \times n_{WWTP}}$</td>
+                            <td>$\mathbb{R}^{m \times n}$</td>
                         </tr>
                         <tr>
                             <td>$\mathbf{F}$</td>
                             <td>WWTP effectiveness matrix</td>
                             <td>tonnes/year</td>
-                            <td>$\mathbb{R}^{n_{WWTP} \times n_{WWTP}}$</td>
+                            <td>$\mathbb{R}^{n \times n}$</td>
                         </tr>
                     </tbody>
                 </table>
