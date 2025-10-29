@@ -70,8 +70,8 @@ def getCalculatedParams(
         P_ppm:float = 2.737,            # P concentration in WWTP [mg/L]
         filter_eff:float = 0.4,         # unitless
         maintenance_cost:float = 1e-4,  # [million CAD / (thousand m3 * year)]
-        positive_ext:list = [1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3, 1.0e-3],       # [million CAD / t-year]
-        agro_abatecost:list = [2.88e-2, 2.44e-3, 6.2e-2, 3.69e-2, 8.92e-3, 3.08e-3] # [million CAD / t-year]
+        positive_ext:list = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],       # [million CAD / t-year]
+        agro_abatecost:list = [2.88e-2, 2.44e-3, 6.2e-2, 3.69e-2, 8.92e-3, 3.08e-3] # [million CAD / t^2-year]
         ) -> dict:
     """
     Agriculture abatement default cost matrix A

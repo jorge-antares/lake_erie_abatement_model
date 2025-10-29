@@ -35,6 +35,7 @@ s.t.
 """
 
 import cvxpy
+import time
 from numpy import array
 
 
@@ -158,37 +159,37 @@ def solveBBModel(budget: float, fixed_params: dict, calculated_params: dict) -> 
             x >= 0,
         ],
     )
-    model.solve(solver="SCIP", verbose=False)
-    output = {}
+    model.solve(solver="SCIP", verbose=True)
+    output = getResponseTemplate()
     if model.status not in ["infeasible", "unbounded"]:
-        output["obj"] = model.value
-        output["x"] = x.value
-        output["z"] = params["S"] @ x.value + params["W"] @ w.value
-        output["w"] = params["L"] @ w.value
-        output["wabate"] = params["L"] @ params["F"] @ w.value
-        output["allw"] = w.value
-
-        print(f"\nObjective function:\t {model.value:.4g}")
-
-        print("\nLoad reduction [t/year]:")
-        for reg, entry in zip(params["region_names"], x.value):
-            print(reg, f"\t{round(entry,2)}")
-
-        print("\nLoad reduction WWTPs [t/year]:")
-        for reg, entry in zip(params["region_names"], output["wabate"]):
-            print(reg, f"\t{round(entry,2)}")
-
-        print("\nConcentration reduction [t/year]:")
-        for reg, entry in zip(params["region_names"], output["z"]):
-            print(reg, f"\t{round(entry,4)}")
-        print("\nWWTPs that need investment:")
-
-        for n, i in enumerate(params["region_names"]):
-            print(i, "\t", output["w"][n])
+        output["status"] = model.status
+        output["solution"]["obj"]["value"] = model.value
+        output["solution"]["x"]["value"] = x.value.tolist()
+        output["solution"]["z"]["value"] = (params["S"] @ x.value).tolist()
+        output["solution"]["w"]["value"] = [ int(entry) for entry in (params["L"] @ w.value).round()]
+        output["solution"]["wabate"]["value"] = (params["L"] @ params["F"] @ w.value).round(4).tolist()
+        output["solution"]["allw"]["value"] =  [int(entry) for entry in w.value.round()]
+        output["message"] = "Solution found."
+        runtime = model.solver_stats.solve_time
+        print(f"\nSolved in {runtime} seconds.")
+        print(f"Objective Value:\t {model.value:.4g} millions per year, solved at time", time.strftime("%Y-%m-%d %H:%M:%S"))
     else:
-        print("No solution found... :(")
+        print("No solution found... :(, time now is", time.strftime("%Y-%m-%d %H:%M:%S"))
     return output
 
+def getResponseTemplate() -> dict:
+    return {
+        "status": False,
+        "solution": {
+            "obj": {"units": "million CAD/year", "value": 0.0},
+            "x": {"units": "t/year", "value": []},
+            "z": {"units": "ppb", "value": []},
+            "w": {"units": "plants", "value": []},
+            "wabate": {"units": "t/year", "value": []},
+            "allw": {"units": "unitless", "value": []}
+        },
+        "message": "Solution not found."
+    }
 
 if __name__ == "__main__":
     pass

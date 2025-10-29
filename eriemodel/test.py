@@ -9,6 +9,7 @@ Testing script.
 
 from erieparams import getFixedParameters, getCalculatedParams
 from basemodels import solveTBModel, solveBBModel
+import json
 
 fixed_params = getFixedParameters()
 calculated_params = getCalculatedParams(fixed_params)
@@ -33,6 +34,7 @@ def test_modelAlt():
     # Budget in million CAD
     budget = 500
     sol = solveBBModel(budget, fixed_params, calculated_params)
+    print(json.dumps(sol, indent=4))
     return True
 
 
@@ -41,7 +43,7 @@ if __name__ == "__main__":
     print("*" * 40)
     print("TEST MODEL 1")
     print("*" * 40)
-    test_model()
+    #test_model()
     print("\n\n\n")
     print("+" * 40)
     print("TEST MODEL 2")
