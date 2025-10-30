@@ -34,18 +34,7 @@ async def health_check():
         "version": "1.0.0"
     }
 
-'''
-@app.get("/.well-known/pki-validation/29EBA45A209B442CDB584C17035B3780.txt", response_class=PlainTextResponse)
-async def ssl_validation():
-    """Serve ZeroSSL validation file"""
-    validation_file = os.path.join(os.path.dirname(__file__), "static", ".well-known", "pki-validation", "29EBA45A209B442CDB584C17035B3780.txt")
-    try:
-        with open(validation_file, 'r') as f:
-            content = f.read()
-        return content
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Validation file not found")
-'''
+
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
