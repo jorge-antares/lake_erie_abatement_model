@@ -118,31 +118,6 @@ tail -f logs/nginx/erie_access.log
 tail -f logs/nginx/erie_error.log
 ```
 
-## SSL/HTTPS Setup (Optional)
-
-To enable HTTPS:
-
-1. **Generate SSL certificates** (self-signed for testing):
-```bash
-mkdir -p nginx/ssl
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout nginx/ssl/key.pem \
-  -out nginx/ssl/cert.pem
-```
-
-2. **Uncomment HTTPS section** in `nginx/conf.d/erie.conf`
-
-3. **Update server_name** to your domain
-
-4. **Restart Nginx**:
-```bash
-docker-compose restart nginx
-```
-
-For production, use Let's Encrypt certificates.
-
-## Customization
-
 ### Adjust Rate Limits
 Edit `nginx/conf.d/erie.conf`:
 ```nginx
@@ -162,73 +137,3 @@ maxretry = 5      # Number of violations before ban
 1. Create filter in `fail2ban/config/filter.d/`
 2. Add jail in `fail2ban/config/jail.d/nginx.conf`
 3. Restart Fail2ban: `docker-compose restart fail2ban`
-
-## Security Best Practices
-
-1. **Change default ban times** for production
-2. **Monitor logs regularly** for unusual patterns
-3. **Whitelist trusted IPs** if needed
-4. **Enable HTTPS** for production
-5. **Update Docker images** regularly
-6. **Set strong firewall rules** on host
-7. **Use environment variables** for sensitive data
-
-## Troubleshooting
-
-### Nginx won't start
-```bash
-# Check configuration syntax
-docker run --rm -v $(pwd)/nginx:/etc/nginx nginx:alpine nginx -t
-```
-
-### Fail2ban not banning
-```bash
-# Check if Fail2ban is reading logs
-docker exec erie_fail2ban fail2ban-client status
-
-# Test filter manually
-docker exec erie_fail2ban fail2ban-regex /var/log/nginx/erie_access.log /etc/fail2ban/filter.d/nginx-post-limit.conf
-```
-
-### Can't access application
-```bash
-# Check if all containers are running
-docker-compose ps
-
-# Check Nginx logs
-docker-compose logs nginx
-
-# Test backend directly (from host)
-curl http://localhost:8000
-```
-
-## Monitoring
-
-### Key Metrics to Monitor
-- Request rate per endpoint
-- Ban frequency and patterns
-- Response times
-- Error rates (4xx, 5xx)
-- Connection counts
-
-### Log Locations
-- Nginx access: `logs/nginx/erie_access.log`
-- Nginx error: `logs/nginx/erie_error.log`
-- Fail2ban: `fail2ban/data/fail2ban.log`
-- Application: `logs/app.log` (if configured)
-
-## Production Recommendations
-
-1. **Use environment-specific configurations**
-2. **Implement log rotation**
-3. **Set up monitoring/alerting** (Prometheus, Grafana)
-4. **Use real SSL certificates** (Let's Encrypt)
-5. **Configure backup for Fail2ban database**
-6. **Implement additional security layers** (WAF, IDS)
-7. **Regular security audits**
-
-## References
-
-- [Nginx Documentation](https://nginx.org/en/docs/)
-- [Fail2ban Manual](https://www.fail2ban.org/wiki/index.php/Main_Page)
-- [Docker Compose Documentation](https://docs.docker.com/compose/)

@@ -26,7 +26,7 @@ COPY api/ .
 COPY eriemodel/ ./eriemodel/
 
 # Create logs directory and set permissions
-RUN mkdir -p logs && chown -R appuser:appuser /app
+RUN mkdir -p api/logs && chown -R appuser:appuser /app
 
 # Switch to non-privileged user
 USER appuser
