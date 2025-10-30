@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import numpy as np
@@ -33,6 +33,18 @@ async def health_check():
         "service": "lake_erie_optimization",
         "version": "1.0.0"
     }
+
+
+@app.get("/.well-known/pki-validation/29EBA45A209B442CDB584C17035B3780.txt", response_class=PlainTextResponse)
+async def ssl_validation():
+    """Serve ZeroSSL validation file"""
+    validation_file = os.path.join(os.path.dirname(__file__), "static", ".well-known", "pki-validation", "29EBA45A209B442CDB584C17035B3780.txt")
+    try:
+        with open(validation_file, 'r') as f:
+            content = f.read()
+        return content
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Validation file not found")
 
 
 @app.get("/", response_class=HTMLResponse)
