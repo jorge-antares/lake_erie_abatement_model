@@ -11,6 +11,5 @@ logs/
 fail2ban/data/
 
 # SSL certificates
-nginx/ssl/*.pem
-nginx/ssl/*.key
+nginx/ssl/*
 
