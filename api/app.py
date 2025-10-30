@@ -34,7 +34,7 @@ async def health_check():
         "version": "1.0.0"
     }
 
-
+'''
 @app.get("/.well-known/pki-validation/29EBA45A209B442CDB584C17035B3780.txt", response_class=PlainTextResponse)
 async def ssl_validation():
     """Serve ZeroSSL validation file"""
@@ -45,7 +45,7 @@ async def ssl_validation():
         return content
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Validation file not found")
-
+'''
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
