@@ -13,7 +13,7 @@ Erie abatement model.
 
 import pandas as pd
 from pathlib import Path
-from numpy import diag, array, ones
+from numpy import diag, array, ones, ceil
 
 
 def getFixedParameters() -> dict:
@@ -49,19 +49,20 @@ def getFixedParameters() -> dict:
 
     return {
         "region_names": ["SCR", "LSC", "DR", "WB", "CB", "EB"],
+        "max_wwtp_effl": ceil(fvec.max()),
         "n_wwtps": L.shape[1],
         "n_regions": 6,
+        "fvec": fvec,
+        "S": S,
+        "L": L,
         "volume_km3": {
             "SCR": 0.4,
             "LSC": 4.6,
             "DR": 0.4,
             "WB": 27.8,
             "CB": 318.7,
-            "EB": 159.3,
-        },
-        "fvec": fvec,
-        "S": S,
-        "L": L
+            "EB": 159.3
+        }
     }
 
 
@@ -70,7 +71,7 @@ def getCalculatedParams(
         P_ppm:float = 2.737,            # P concentration in WWTP [mg/L]
         filter_eff:float = 0.4,         # unitless
         maintenance_cost:float = 1e-4,  # [million CAD / (thousand m3 * year)]
-        positive_ext:list = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],       # [million CAD / t-year]
+        wwtp_effluent_threshold:float = 1e8,    # thousand m3 / year
         agro_abatecost:list = [2.88e-2, 2.44e-3, 6.2e-2, 3.69e-2, 8.92e-3, 3.08e-3] # [million CAD / t^2-year]
         ) -> dict:
     """
@@ -94,9 +95,9 @@ def getCalculatedParams(
     
     return {
         "b": maintenance_cost * fixed_params["fvec"].reshape(-1),
+        "u_w": fixed_params["fvec"] <= wwtp_effluent_threshold,
         "W": fixed_params["S"] @ fixed_params["L"] @ F,
         "A": diag(array(agro_abatecost)),
-        "c": array(positive_ext),
         "F": F
     }
 

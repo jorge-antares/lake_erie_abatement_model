@@ -12,34 +12,35 @@
             <h5><i class="bi bi-info-circle"></i> Mathematical Model</h5>
             <div class="row">
                 <div class="col-md-6">
-                    <h6>Target-Based Model:</h6>
+                    <h6>Target-Based:</h6>
                     <p>
                         $$\min \mathbf{x}^T \mathbf{A} \mathbf{x} + \mathbf{b}^T \mathbf{w}$$
                         subject to:
                         $$\mathbf{S} \mathbf{x} + \mathbf{W} \mathbf{w} \geq \mathbf{z}_{target}$$
-                        $$\mathbf{x} \geq 0, \quad \mathbf{w} \in \{0,1\}$$
+                        $$\mathbf{x} \geq 0, \quad \mathbf{w} \in \{0,1\}^{n}$$
                     </p>
                 </div>
                 <div class="col-md-6">
-                    <h6>Budget-Based Model:</h6>
+                    <h6>Budget-Based:</h6>
                     <p>
                         $$\max \mathbf{c}^T (\mathbf{S} \mathbf{x} + \mathbf{W} \mathbf{w})$$
                         subject to:
                         $$\mathbf{x}^T \mathbf{A} \mathbf{x} + \mathbf{b}^T \mathbf{w} \leq B$$
-                        $$\mathbf{x} \geq 0, \quad \mathbf{w} \in \{0,1\}$$
+                        $$\mathbf{x} \geq 0, \quad \mathbf{w} \in \{0,1\}^{n}$$
                     </p>
                 </div>
             </div>
             <div class="mt-3">
                 <h6>Where:</h6>
                 <ul class="list-unstyled">
-                    <li>$\mathbf{x}$ = Agricultural abatement by region (tonnes/year)</li>
-                    <li>$\mathbf{w}$ = Binary variables for WWTP investments</li>
-                    <li>$\mathbf{A}$ = Agricultural cost matrix</li>
-                    <li>$\mathbf{b}$ = WWTP maintenance costs</li>
-                    <li>$\mathbf{S}$ = Agricultural load reduction coefficients</li>
-                    <li>$\mathbf{W} = \mathbf{S} \times \mathbf{L} \times \mathbf{F}$ = WWTP effectiveness matrix</li>
-                    <li>$B$ = Budget constraint (Million CAD)</li>
+                    <li>$\mathbf{x}$ : Agricultural abatement by region (tonnes/year)</li>
+                    <li>$\mathbf{w}$ : Binary variables for WWTP investments</li>
+                    <li>$\mathbf{A}$ : Agricultural cost matrix</li>
+                    <li>$\mathbf{b}$ : WWTP maintenance costs</li>
+                    <li>$\mathbf{S}$ : Agricultural load reduction coefficients</li>
+                    <li>$\mathbf{W} = \mathbf{S} \times \mathbf{L} \times \mathbf{F}$ : WWTP effectiveness matrix</li>
+                    <li>$B$ : Budget constraint (Million CAD)</li>
+                    <li>$n$ : Available wastewater treatment plants</li>
                 </ul>
             </div>
         </div>
@@ -72,8 +73,8 @@
 
             <!-- Target Model Parameters -->
             <div class="form-section" id="target-params">
-                <h4 class="text-primary mb-3">Target Concentration Reductions (ppb)</h4>
-                <p class="text-muted mb-3">Specify the target phosphorus concentration reduction for each region in parts per billion (ppb).</p>
+                <h4 class="text-primary mb-3">Target P Reductions</h4>
+                <p class="text-muted mb-3">Specify the target phosphorus concentration reduction for each region in parts per billion (µg/L).</p>
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label for="target_scr" class="form-label">SCR (St. Clair River)</label>
@@ -94,7 +95,7 @@
                     <div class="col-md-4 mb-3">
                         <label for="target_cb" class="form-label">CB (Central Basin)</label>
                         <input type="number" class="form-control" id="target_cb" name="target_cb" value="0.665" step="0.001" min="0">
-                        <div class="form-text">Default: 212/318.7 ≈ 0.665</div>
+                        <div class="form-text">E.g.: 212 tonnes / 318.7 km<sup>3</sup>≈ 0.665 µg/L</div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="target_eb" class="form-label">EB (Eastern Basin)</label>
@@ -117,22 +118,61 @@
 
             <!-- Advanced Parameters -->
             <div class="form-section">
-                <h4 class="text-primary mb-3">Advanced Parameters</h4>
+                <h4 class="text-primary mb-3">WWTP Parameters</h4>
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label for="filter_efficiency" class="form-label">Filter Efficiency</label>
+                        <label for="filter_efficiency" class="form-label">WWTP New Technology<br>Efficiency: (0 - 1)</label>
                         <input type="number" class="form-control" id="filter_efficiency" name="filter_efficiency" value="0.4" step="0.01" min="0" max="1">
-                        <div class="form-text">WWTP filter efficiency (0-1)</div>
+                        <div class="form-text">Default: 0.4</div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="maintenance_cost" class="form-label">Maintenance Cost</label>
+                        <label for="maintenance_cost" class="form-label">Annualized Cost<br>(Invest. + Maintenance)</label>
                         <input type="number" class="form-control" id="maintenance_cost" name="maintenance_cost" value="0.0001" step="0.00001" min="0">
                         <div class="form-text">Million CAD per (thousand m³ × year)</div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="agro_cost_factor" class="form-label">Agriculture Cost Factor</label>
-                        <input type="number" class="form-control" id="agro_cost_factor" name="agro_cost_factor" value="0.004" step="0.001" min="0">
-                        <div class="form-text">Cost factor for agricultural abatement</div>
+                        <label for="wwtp_effluent_threshold" class="form-label">Effluent Threshold<br>(exclude larger plants)</label>
+                        <input type="number" class="form-control" id="wwtp_effluent_threshold" name="wwtp_effluent_threshold" value="100000000" step="10" min="0">
+                        <div class="form-text">Thousand m³/year<br>(e.g., Kitchener WWTP: 25,000)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agricultural Cost Parameters -->
+            <div class="form-section">
+                <h4 class="text-primary mb-3">Agricultural Abatement Costs</h4>
+                <p class="text-muted mb-3">Specify the agricultural abatement cost for each region in Million CAD per (tonne² × year).<br>
+                Default values assume the same underlying cost function per unit of cropland area.</p>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="agro_cost_scr" class="form-label">SCR (St. Clair River)</label>
+                        <input type="number" class="form-control" id="agro_cost_scr" name="agro_cost_scr" value="0.0288" step="0.0001" min="0">
+                        <div class="form-text">Default: 0.0288</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="agro_cost_lsc" class="form-label">LSC (Lake St. Clair)</label>
+                        <input type="number" class="form-control" id="agro_cost_lsc" name="agro_cost_lsc" value="0.0024" step="0.0001" min="0">
+                        <div class="form-text">Default: 0.0024</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="agro_cost_dr" class="form-label">DR (Detroit River)</label>
+                        <input type="number" class="form-control" id="agro_cost_dr" name="agro_cost_dr" value="0.062" step="0.0001" min="0">
+                        <div class="form-text">Default: 0.062</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="agro_cost_wb" class="form-label">WB (Western Basin)</label>
+                        <input type="number" class="form-control" id="agro_cost_wb" name="agro_cost_wb" value="0.0369" step="0.0001" min="0">
+                        <div class="form-text">Default: 0.0369</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="agro_cost_cb" class="form-label">CB (Central Basin)</label>
+                        <input type="number" class="form-control" id="agro_cost_cb" name="agro_cost_cb" value="0.0089" step="0.0001" min="0">
+                        <div class="form-text">Default: 0.0089</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="agro_cost_eb" class="form-label">EB (Eastern Basin)</label>
+                        <input type="number" class="form-control" id="agro_cost_eb" name="agro_cost_eb" value="0.0031" step="0.0001" min="0">
+                        <div class="form-text">Default: 0.0031</div>
                     </div>
                 </div>
             </div>

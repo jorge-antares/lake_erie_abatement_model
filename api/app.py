@@ -1,5 +1,5 @@
-from fastapi import FastAPI, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse
+from fastapi import FastAPI, Request, Form
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import numpy as np
@@ -15,16 +15,33 @@ except ModuleNotFoundError:
     from basemodels import solveBBModel, solveTBModel
     from erieparams import getFixedParameters, getCalculatedParams
 
+
+
+# APP Initialization ---------------------
 app = FastAPI(
     title="Lake Erie Phosphorus Abatement Model API",
     version="1.0.0"
 )
-
-# Templates
 templates = Jinja2Templates(directory="templates")
-# Static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+
+
+# MODEL Parameters ----------------------
+fixed_params = getFixedParameters()
+
+
+
+# ENDPOINTS -----------------------------
+
+# Index
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    """Home page with model overview"""
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
+# Health check
 @app.get("/health")
 async def health_check():
     """Health check endpoint for monitoring"""
@@ -35,17 +52,14 @@ async def health_check():
     }
 
 
-
-@app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    """Home page with model overview"""
-    return templates.TemplateResponse("index.html", {"request": request})
-
+# Optimization form
 @app.get("/optimize", response_class=HTMLResponse)
 async def optimize_form(request: Request):
     """Display optimization parameters form"""
     return templates.TemplateResponse("optimize.html", {"request": request})
 
+
+# Run optimization
 @app.post("/run-optimization")
 async def run_optimization(
     request: Request,
@@ -59,9 +73,11 @@ async def run_optimization(
     target_eb: Optional[float] = Form(0.0),
     # Budget model parameters
     budget: Optional[float] = Form(500),
-    # Advanced parameters
+    # WWTP parameters
     filter_efficiency: float = Form(0.4),
     maintenance_cost: float = Form(0.0001),
+    wwtp_effluent_threshold: float = Form(1e10),
+    # Agricultural cost parameters
     agro_cost_scr: float = Form(0.0288),
     agro_cost_lsc: float = Form(0.00244),
     agro_cost_dr: float = Form(0.062),
@@ -71,10 +87,7 @@ async def run_optimization(
 ):
     """Run optimization and display results"""
     try:
-        # Get fixed parameters
-        fixed_params = getFixedParameters()
-        
-        # Prepare agriculture costs
+        # Agriculture costs
         agro_costs = [
             agro_cost_scr,
             agro_cost_lsc,
@@ -86,14 +99,12 @@ async def run_optimization(
         
         # Get calculated parameters with user inputs
         calc_params = getCalculatedParams(
-            fixed_params=fixed_params,
-            filter_eff=filter_efficiency,
-            maintenance_cost=maintenance_cost,
-            agro_abatecost=agro_costs
+            fixed_params            = fixed_params,
+            filter_eff              = filter_efficiency,
+            maintenance_cost        = maintenance_cost,
+            wwtp_effluent_threshold = wwtp_effluent_threshold,
+            agro_abatecost          = agro_costs
         )
-        
-        # Combine parameters
-        params = {**fixed_params, **calc_params}
         
         if model_type == "target":
             # Target-based optimization
@@ -115,7 +126,7 @@ async def run_optimization(
                 "objective_units": output["solution"]["obj"]["units"]
             }
             
-        else:  # budget model
+        else:
             # Budget-based optimization
             output = solveBBModel(budget, fixed_params, calc_params)
             
@@ -135,16 +146,16 @@ async def run_optimization(
             }
         
         # Build unified results from output (works for both models)
-        volume_array = np.array([params["volume_km3"][region] for region in params["region_names"]])
+        volume_array = np.array([fixed_params["volume_km3"][region] for region in fixed_params["region_names"]])
         z_values = np.array(output["solution"]["z"]["value"])
         zload = z_values * volume_array
         
         results = {
-            "agricultural_abatement": dict(zip(params["region_names"], output["solution"]["x"]["value"])),
-            "wwtp_abatement": dict(zip(params["region_names"], output["solution"]["wabate"]["value"])),
-            "wwtp_investments": dict(zip(params["region_names"], output["solution"]["w"]["value"])),
-            "concentration_changes": dict(zip(params["region_names"], output["solution"]["z"]["value"])),
-            "load_changes": dict(zip(params["region_names"], zload.tolist())),
+            "agricultural_abatement": dict(zip(fixed_params["region_names"], output["solution"]["x"]["value"])),
+            "wwtp_abatement": dict(zip(fixed_params["region_names"], output["solution"]["wabate"]["value"])),
+            "wwtp_investments": dict(zip(fixed_params["region_names"], output["solution"]["w"]["value"])),
+            "concentration_changes": dict(zip(fixed_params["region_names"], output["solution"]["z"]["value"])),
+            "load_changes": dict(zip(fixed_params["region_names"], zload.tolist())),
             "total_agro_abatement": float(np.sum(output["solution"]["x"]["value"])),
             "total_wwtp_abatement": float(np.sum(output["solution"]["wabate"]["value"])),
             "total_wwtps": int(np.sum(output["solution"]["w"]["value"]))
@@ -165,10 +176,14 @@ async def run_optimization(
             "error_detail": error_detail
         })
 
+
+# Model documentation
 @app.get("/model-docs", response_class=HTMLResponse)
 async def model_docs(request: Request):
     """Display mathematical model documentation"""
     return templates.TemplateResponse("model_docs.html", {"request": request})
+
+
 
 if __name__ == "__main__":
     import uvicorn

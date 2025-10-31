@@ -66,7 +66,7 @@ def solveTBModel(ztarget:list, fixed_params: dict, calculated_params: dict) -> c
         cvxpy.Minimize(cvxpy.quad_form(x, params["A"]) + params["b"].T @ w),
         [
             params["S"] @ x + params["W"] @ w >= ztarget,
-            w <= 1,
+            w <= params["u_w"],
             w >= 0,
             x >= 0,
         ],
@@ -123,10 +123,10 @@ def solveBBModel(budget: float, fixed_params: dict, calculated_params: dict) -> 
         w - Vector of binary variuables (unitless)
 
     MODEL
-        min x^T A x + b^T w - c^T zpw
+        max c^T ( S x + W w )
     s.t.
-        S x + W w - z >= z_target
-        x, z >= 0
+        x^T A x + b^T w <= budget
+        x >= 0
         w binary
         W = (S*L*F)
     """
@@ -137,12 +137,13 @@ def solveBBModel(budget: float, fixed_params: dict, calculated_params: dict) -> 
     w = cvxpy.Variable(shape=params["n_wwtps"], integer=True, name="w")
 
     # SOLVER
-    weight = array([1, 1, 1, 100, 100, 1])
+    weight = array([1, 1, 1, 100, 50, 100])
+    weight = weight / weight.sum()
     model = cvxpy.Problem(
         cvxpy.Maximize(weight.T @ params["S"] @ x + weight.T @ params["W"] @ w),
         [
             cvxpy.quad_form(x, params["A"]) + params["b"].T @ w <= budget,
-            w <= 1,
+            w <= params["u_w"],
             w >= 0,
             x >= 0,
         ],
@@ -152,7 +153,7 @@ def solveBBModel(budget: float, fixed_params: dict, calculated_params: dict) -> 
     if model.status not in ["infeasible", "unbounded"]:
         output["status"] = model.status
         output["solution"]["obj"]["value"] = model.value
-        output["solution"]["obj"]["units"] = "ppb"
+        output["solution"]["obj"]["units"] = "ppb (weighted average)"
         output["solution"]["x"]["value"] = x.value.tolist()
         output["solution"]["z"]["value"] = (params["S"] @ x.value).tolist()
         output["solution"]["w"]["value"] = [ int(entry) for entry in (params["L"] @ w.value).round()]
