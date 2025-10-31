@@ -56,7 +56,7 @@
                         <tr>
                             <td>$\mathbf{x}$</td>
                             <td>Agricultural abatement by region</td>
-                            <td>tonnes/year</td>
+                            <td>tonne/year</td>
                             <td>$\mathbb{R}^{m}_+$</td>
                         </tr>
                         <tr>
@@ -68,33 +68,38 @@
                         <tr>
                             <td>$\mathbf{A}$</td>
                             <td>Agricultural cost matrix (quadratic)</td>
-                            <td>CAD·year/tonne²</td>
+                            <td>Million CAD/(tonne<sup>2</sup> year)</td>
                             <td>$\mathbb{R}^{m \times m}$</td>
                         </tr>
                         <tr>
                             <td>$\mathbf{b}$</td>
                             <td>WWTP maintenance costs</td>
-                            <td>Million CAD/year</td>
+                            <td>Million CAD/(thousand m<sup>3</sup> year)</td>
                             <td>$\mathbb{R}^{n}$</td>
                         </tr>
                         <tr>
                             <td>$\mathbf{S}$</td>
-                            <td>Agricultural effectiveness matrix</td>
-                            <td>ppb·year/tonne</td>
+                            <td>Steady state mass balance matrix</td>
+                            <td>ppb/tonne</td>
                             <td>$\mathbb{R}^{m \times m}$</td>
                         </tr>
                         <tr>
                             <td>$\mathbf{L}$</td>
-                            <td>WWTP location matrix</td>
+                            <td>Matrix that links WWTPs to regions</td>
                             <td>unitless</td>
                             <td>$\mathbb{R}^{m \times n}$</td>
                         </tr>
                         <tr>
                             <td>$\mathbf{F}$</td>
-                            <td>WWTP effectiveness matrix</td>
-                            <td>tonnes/year</td>
+                            <td>Diagonal matrix of WWTP effective abatement</td>
+                            <td>tonne/year</td>
                             <td>$\mathbb{R}^{n \times n}$</td>
                         </tr>
+                        <tr>
+                            <td>$\mathbf{c}$</td>
+                            <td>Relative weight vector for regions</td>
+                            <td>unitless</td>
+                            <td>$\mathbb{R}^{m}$</td>
                     </tbody>
                 </table>
             </div>

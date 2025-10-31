@@ -34,11 +34,12 @@
                 <h6>Where:</h6>
                 <ul class="list-unstyled">
                     <li>$\mathbf{x}$ : Agricultural abatement by region (tonnes/year)</li>
-                    <li>$\mathbf{w}$ : Binary variables for WWTP investments</li>
-                    <li>$\mathbf{A}$ : Agricultural cost matrix</li>
-                    <li>$\mathbf{b}$ : WWTP maintenance costs</li>
-                    <li>$\mathbf{S}$ : Agricultural load reduction coefficients</li>
-                    <li>$\mathbf{W} = \mathbf{S} \times \mathbf{L} \times \mathbf{F}$ : WWTP effectiveness matrix</li>
+                    <li>$\mathbf{w}$ : Binary variables for WWTP investments (unitless)</li>
+                    <li>$\mathbf{A}$ : Agricultural abatement cost matrix (Million CAD/(tonne<sup>2</sup> year))</li>
+                    <li>$\mathbf{b}$ : WWTP investment and maintenance costs (Million CAD/(thousand m<sup>3</sup> year))</li>
+                    <li>$\mathbf{S}$ : Steady state mass balance matrix (ppb/tonne)</li>
+                    <li>$\mathbf{W} = \mathbf{S} \times \mathbf{L} \times \mathbf{F}$ : WWTP effective load matrix (tonne/year)</li>
+                    <li>$\mathbf{c}$ : Relative weight vector (unitless)</li>
                     <li>$B$ : Budget constraint (Million CAD)</li>
                     <li>$n$ : Available wastewater treatment plants</li>
                 </ul>
