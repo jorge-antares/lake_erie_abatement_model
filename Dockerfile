@@ -31,8 +31,5 @@ RUN mkdir -p api/logs && chown -R appuser:appuser /app
 # Switch to non-privileged user
 USER appuser
 
-# Expose port
 EXPOSE 8000
-
-# Run the application
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

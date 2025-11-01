@@ -2,14 +2,7 @@ __pycache__/
 .DS_Store
 .vscode/
 .venv/
-
-# Logs
 logs/
 *.log
-
-# Fail2ban data
 fail2ban/data/
-
-# SSL certificates
 nginx/ssl/*
-

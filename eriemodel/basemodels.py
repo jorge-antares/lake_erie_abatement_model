@@ -39,7 +39,7 @@ import time
 from numpy import array
 
 
-def solveTBModel(ztarget:list, fixed_params: dict, calculated_params: dict) -> cvxpy.Problem:
+def solveTBModel(ztarget:list, fixed_params: dict, calculated_params: dict) -> dict:
     """
         DECISION VARIABLES
         x - Agro abatement by region (metric tonnes per year)
@@ -73,8 +73,10 @@ def solveTBModel(ztarget:list, fixed_params: dict, calculated_params: dict) -> c
     )
     model.solve(solver="SCIP", verbose=False)
     output = getResponseTemplate()
+
     if model.status not in ["infeasible", "unbounded"]:
         output["status"] = model.status
+        output["solution"]["solve_time"]["value"] = model._solve_time
         output["solution"]["obj"]["value"] = model.value
         output["solution"]["x"]["value"] = x.value.tolist()
         output["solution"]["z"]["value"] = (params["S"] @ x.value).tolist()
@@ -82,41 +84,14 @@ def solveTBModel(ztarget:list, fixed_params: dict, calculated_params: dict) -> c
         output["solution"]["wabate"]["value"] = (params["L"] @ params["F"] @ w.value).round(4).tolist()
         output["solution"]["allw"]["value"] =  [int(entry) for entry in w.value.round()]
         output["message"] = "Solution found."
-        print(f"SUCCESS - TBM\tObjFun: {model.value:.4g} |", time.strftime("%Y-%m-%d %H:%M:%S"))
+        print(f"SUCCESS   TBM\tObjFun: {model.value:.4g} | Solve time: {model._solve_time:4g} sec | ", time.strftime("%Y-%m-%d %H:%M:%S"))
     else:
-        print("FAIL - TBM", time.strftime("%Y-%m-%d %H:%M:%S"))
+        print("FAIL   TBM", time.strftime("%Y-%m-%d %H:%M:%S"))
     return output
 
 
-def saveResults(model: cvxpy.Problem, params: dict, filename: str) -> bool:
-    x = model.variables()[0].value
-    w = model.variables()[1].value
-    load_w = params["L"] @ params["F"] @ w
-    total_load = [i + j for i, j in zip(x, load_w)]
-    n_wwtp = params["L"] @ w
-    zopt = params["S"] @ x + params["W"] @ w
-    zload = [i * j for i, j in zip(zopt, params["volume_km3"].values())]
 
-    with open(f"{filename}.csv", "w") as outfile:
-        outfile.write(
-            "REGION,AGRO_ABATE_t,WWTP_ABATE_t,TOTAL_ABATE_t,NUMBER_WWTP,DELTA_PPB,DELTA_LOAD_t\n"
-        )
-        for n in range(params["n_regions"]):
-            var1 = params["region_names"][n]
-            var2 = x[n]
-            var3 = load_w[n]
-            var4 = total_load[n]
-            var5 = n_wwtp[n]
-            var6 = zopt[n]
-            var7 = zload[n]
-            line = (
-                f"{var1},{var2:.4g},{var3:.4g},{var4:.4g},{var5},{var6:.4g},{var7:.4g}"
-            )
-            outfile.write(line + "\n")
-    return True
-
-
-def solveBBModel(budget: float, fixed_params: dict, calculated_params: dict) -> cvxpy.Problem:
+def solveBBModel(budget: float, fixed_params: dict, calculated_params: dict) -> dict:
     """
         DECISION VARIABLES
         x - Agro abatement by region (metric tonnes per year)
@@ -150,8 +125,10 @@ def solveBBModel(budget: float, fixed_params: dict, calculated_params: dict) -> 
     )
     model.solve(solver="SCIP", verbose=False)
     output = getResponseTemplate()
+
     if model.status not in ["infeasible", "unbounded"]:
         output["status"] = model.status
+        output["solution"]["solve_time"]["value"] = model._solve_time
         output["solution"]["obj"]["value"] = model.value
         output["solution"]["obj"]["units"] = "ppb (weighted average)"
         output["solution"]["x"]["value"] = x.value.tolist()
@@ -160,15 +137,19 @@ def solveBBModel(budget: float, fixed_params: dict, calculated_params: dict) -> 
         output["solution"]["wabate"]["value"] = (params["L"] @ params["F"] @ w.value).round(4).tolist()
         output["solution"]["allw"]["value"] =  [int(entry) for entry in w.value.round()]
         output["message"] = "Solution found."
-        print(f"SUCCESS - BBM\tObjFun: {model.value:.4g} |", time.strftime("%Y-%m-%d %H:%M:%S"))
+        print(f"SUCCESS   BBM\tObjFun: {model.value:.4g} |", time.strftime("%Y-%m-%d %H:%M:%S"))
     else:
-        print("FAIL - BBM", time.strftime("%Y-%m-%d %H:%M:%S"))
+        output["status"] = model.status
+        print("FAIL   BBM", time.strftime("%Y-%m-%d %H:%M:%S"))
     return output
+
+
 
 def getResponseTemplate() -> dict:
     return {
         "status": False,
         "solution": {
+            "solve_time": {"units": "sec", "value": 0.0},
             "obj": {"units": "million CAD/year", "value": 0.0},
             "x": {"units": "t/year", "value": []},
             "z": {"units": "ppb", "value": []},
@@ -176,8 +157,37 @@ def getResponseTemplate() -> dict:
             "wabate": {"units": "t/year", "value": []},
             "allw": {"units": "unitless", "value": []}
         },
-        "message": "Solution not found."
+        "message": "No feasible solution found."
     }
+
+
+
+def saveResults(model: cvxpy.Problem, params: dict, filename: str) -> bool:
+    x = model.variables()[0].value
+    w = model.variables()[1].value
+    load_w = params["L"] @ params["F"] @ w
+    total_load = [i + j for i, j in zip(x, load_w)]
+    n_wwtp = params["L"] @ w
+    zopt = params["S"] @ x + params["W"] @ w
+    zload = [i * j for i, j in zip(zopt, params["volume_km3"].values())]
+
+    with open(f"{filename}.csv", "w") as outfile:
+        outfile.write(
+            "REGION,AGRO_ABATE_t,WWTP_ABATE_t,TOTAL_ABATE_t,NUMBER_WWTP,DELTA_PPB,DELTA_LOAD_t\n"
+        )
+        for n in range(params["n_regions"]):
+            var1 = params["region_names"][n]
+            var2 = x[n]
+            var3 = load_w[n]
+            var4 = total_load[n]
+            var5 = n_wwtp[n]
+            var6 = zopt[n]
+            var7 = zload[n]
+            line = (
+                f"{var1},{var2:.4g},{var3:.4g},{var4:.4g},{var5},{var6:.4g},{var7:.4g}"
+            )
+            outfile.write(line + "\n")
+    return True
 
 if __name__ == "__main__":
     pass

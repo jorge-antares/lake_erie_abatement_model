@@ -7,9 +7,8 @@ Code to run models.
 
 """
 
-from numpy import array
 from erieparams import getFixedParameters, getCalculatedParams
-from basemodels import solveTBModel, solveBBModel, saveResults
+from basemodels import solveTBModel, solveBBModel
 
 
 def runModel1():

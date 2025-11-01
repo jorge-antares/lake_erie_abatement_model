@@ -9,7 +9,7 @@ Testing script.
 
 from erieparams import getFixedParameters, getCalculatedParams
 from basemodels import solveTBModel, solveBBModel
-import json
+
 
 fixed_params = getFixedParameters()
 calculated_params = getCalculatedParams(fixed_params)
@@ -47,4 +47,4 @@ if __name__ == "__main__":
     print("+" * 40)
     print("TEST BUDGET-BASED MODEL")
     print("+" * 40)
-    test_modelAlt()
+    #test_modelAlt()
