@@ -36,6 +36,7 @@
                     <p><strong>Objective Value:</strong> {{ "%.4f"|format(model_info.objective) }} {{ model_info.objective_units }}</p>
                     <p><strong>Budget Used:</strong> ${{ model_info.budget }} million CAD</p>
                     {% endif %}
+                    <p><strong>Solve Time:</strong> {{ model_info.solve_time }} seconds</p>
                 </div>
             </div>
         </div>
@@ -162,7 +163,7 @@
                 <div class="col-md-4">
                     <div class="card text-center">
                         <div class="card-body">
-                            <h5 class="card-title">Total WWTPs</h5>
+                            <h5 class="card-title">Total WWTPs Upgraded</h5>
                             <p class="card-text display-6">{{ results.total_wwtps }}</p>
                             <small class="text-muted">facilities</small>
                         </div>

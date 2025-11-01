@@ -122,6 +122,7 @@ async def run_optimization(
             model_info = {
                 "type": "Target-Based",
                 "status": output["status"],
+                "solve_time": round(output["solution"]["solve_time"]["value"], 2),
                 "objective": output["solution"]["obj"]["value"],
                 "objective_units": output["solution"]["obj"]["units"]
             }
@@ -140,6 +141,7 @@ async def run_optimization(
             model_info = {
                 "type": "Budget-Based",
                 "status": output["status"],
+                "solve_time": round(output["solution"]["solve_time"]["value"],2),
                 "objective": output["solution"]["obj"]["value"],
                 "objective_units": output["solution"]["obj"]["units"],
                 "budget": budget
