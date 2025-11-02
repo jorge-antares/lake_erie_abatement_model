@@ -80,27 +80,32 @@
                     <div class="col-md-4 mb-3">
                         <label for="target_scr" class="form-label">SCR (St. Clair River)</label>
                         <input type="number" class="form-control" id="target_scr" name="target_scr" value="0.0" step="0.001" min="0">
+                        <div class="form-text">1 ppb = 0.4 tonnes</div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="target_lsc" class="form-label">LSC (Lake St. Clair)</label>
                         <input type="number" class="form-control" id="target_lsc" name="target_lsc" value="0.0" step="0.001" min="0">
+                        <div class="form-text">1 ppb = 4.6 tonnes</div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="target_dr" class="form-label">DR (Detroit River)</label>
                         <input type="number" class="form-control" id="target_dr" name="target_dr" value="0.0" step="0.001" min="0">
+                        <div class="form-text">1 ppb = 0.4 tonnes</div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="target_wb" class="form-label">WB (Western Basin)</label>
                         <input type="number" class="form-control" id="target_wb" name="target_wb" value="0.0" step="0.001" min="0">
+                        <div class="form-text">1 ppb = 27.8 tonnes</div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="target_cb" class="form-label">CB (Central Basin)</label>
-                        <input type="number" class="form-control" id="target_cb" name="target_cb" value="0.665" step="0.001" min="0">
-                        <div class="form-text">E.g.: 212 tonnes / 318.7 km<sup>3</sup>≈ 0.665 µg/L</div>
+                        <input type="number" class="form-control" id="target_cb" name="target_cb" value="0.31" step="0.001" min="0">
+                        <div class="form-text">1 ppb = 318.7 tonnes<br>(E.g. 0.31 ppb = 100 tonnes)</div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="target_eb" class="form-label">EB (Eastern Basin)</label>
                         <input type="number" class="form-control" id="target_eb" name="target_eb" value="0.0" step="0.001" min="0">
+                        <div class="form-text">1 ppb = 159.3 tonnes</div>
                     </div>
                 </div>
             </div>
@@ -128,12 +133,12 @@
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="maintenance_cost" class="form-label">Annualized Cost<br>(Invest. + Maintenance)</label>
-                        <input type="number" class="form-control" id="maintenance_cost" name="maintenance_cost" value="0.0001" step="0.00001" min="0">
+                        <input type="number" class="form-control" id="maintenance_cost" name="maintenance_cost" value="0.001" step="0.00001" min="0">
                         <div class="form-text">Million CAD per (thousand m³ × year)</div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="wwtp_effluent_threshold" class="form-label">Effluent Threshold<br>(exclude larger plants)</label>
-                        <input type="number" class="form-control" id="wwtp_effluent_threshold" name="wwtp_effluent_threshold" value="100000000" step="10" min="0">
+                        <input type="number" class="form-control" id="wwtp_effluent_threshold" name="wwtp_effluent_threshold" value="1000000" step="10" min="0">
                         <div class="form-text">Thousand m³/year<br>(e.g., Kitchener WWTP: 25,000)</div>
                     </div>
                 </div>
