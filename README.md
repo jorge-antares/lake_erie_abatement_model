@@ -1,10 +1,11 @@
 # Lake Erie Abatement Optimization #
 
+## Description
 We present an optimization model for the Canadian side of Lake Erie (LE) that determines the required abatement of total phosphorus (TP) on agricultural activities or end-of-pipe investments in wastewater treatment plants across the Canadian LE watersheds, such that a target reduction in P concentration is achieved at the lowest cost.
 
 The hydrological model used in this study considers the interdependence among six regions: St. Claire River and Lake, the Detroit River, and the Western, Central and Eastern Basins of LE.
 
-# Model I
+### Target-Based Model
 The optimization model is:
 
 $$\min_{x,w}\quad x^T A x + b^T w$$
@@ -26,7 +27,7 @@ and its parameters are:
 - $L$: an indicator matrix of size $R \times I$ whose elements $l_{r,i}=1$ if WWTP i is located in region r and zero otherwise [unitless].
 - $F$: a diagonal matrix of size $I \times I$ whose diagonal elements $f_{i,i}$ are the TP decrease on the discharge of WWTP i in [t/year].
 
-# Model II (Alt)
+### Budget-Based Model
 This model has the same variables and parameters as Model I but has an additional parameter, $\alpha$, which expresses the relative weight or importance of concentration reductions on each region of the model. The objective function of Model I is introduced here as a constraint, and the phosphorus concentration constraint of Model I is introduced as the objective function.
 
 $$\max_{x,w}\quad \alpha^{\rm T} \big( Sx + Ww \big)$$
@@ -41,13 +42,13 @@ $$w_{i} \in \{0,1\}\quad \forall i.$$
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Using Docker (Recommended)
 
 ```bash
-# 1. Setup environment
-./manage.sh setup
+# 1. Run model
+docker run 
 
 # 2. Start all services (FastAPI + Nginx + Fail2ban)
 ./manage.sh start
@@ -73,7 +74,7 @@ python app.py
 # Open browser: http://localhost:8000
 ```
 
-## 🏗️ Architecture
+## Architecture
 
 The application uses a three-tier architecture with security:
 
@@ -87,22 +88,6 @@ Internet → Nginx (Port 80/443) → FastAPI (Port 8000)
 - **Nginx**: Reverse proxy with rate limiting and security headers
 - **Fail2ban**: Intrusion prevention system to ban malicious IPs
 
-## 📚 Documentation
-
-- **[Quick Start Guide](QUICKSTART.md)** - Get up and running in minutes
-- **[Nginx + Fail2ban Setup](NGINX_FAIL2BAN_SETUP.md)** - Detailed security configuration
-- **[SSL/TLS Setup](nginx/ssl/README.md)** - Configure HTTPS
-
-## 🛠️ Management Commands
-
-```bash
-./manage.sh start          # Start all services
-./manage.sh stop           # Stop all services
-./manage.sh status         # Check service status
-./manage.sh logs           # View logs
-./manage.sh banned         # Show banned IPs
-./manage.sh unban <IP>     # Unban an IP address
-```
 
 See [QUICKSTART.md](QUICKSTART.md) for more commands.
 
@@ -114,53 +99,70 @@ See [QUICKSTART.md](QUICKSTART.md) for more commands.
 - **Request Filtering**: Blocks common exploit attempts
 - **Connection Limiting**: Max 10 concurrent connections per IP
 
-## 📦 Project Structure
+## Project Structure
 
 ```
-lake_erie_model/
-├── app.py                    # FastAPI application
-├── docker-compose.yaml       # Container orchestration
-├── manage.sh                 # Management script
-├── src/                      # Optimization model code
-│   ├── basemodels.py        # Core optimization functions
-│   ├── erieparams.py        # Model parameters
-│   └── scenarios.py         # Predefined scenarios
-├── templates/               # HTML templates
-├── nginx/                   # Nginx configuration
-└── fail2ban/                # Security configuration
+.
+├── api
+│   ├── app.py                # API Server
+│   ├── requirements.txt
+│   ├── static
+│   │   ├── css
+│   │   │   ├── bootstrap-icons.css
+│   │   │   └── bootstrap.min.css
+│   │   ├── img
+│   │   │   └── function.svg
+│   │   └── js
+│   └── templates
+│       ├── base.html
+│       ├── index.html
+│       ├── model_docs.html
+│       ├── optimize.html
+│       └── results.html
+├── docker-compose.yaml
+├── Dockerfile
+├── eriemodel                 # Core model implementation
+│   ├── __init__.py
+│   ├── basemodels.py
+│   ├── erieparams.py
+│   ├── mod_requirements.txt
+│   ├── scenarios.py
+│   ├── test.py
+│   └── wwtpdata
+│       ├── fvec.csv
+│       └── Lmat.csv
+├── fail2ban                  # Bans malicious requests
+│   ├── config
+│   ├── filter.d
+│   │   ├── nginx-400.conf
+│   │   ├── nginx-403.conf
+│   │   └── nginx-post-limit.conf
+│   ├── jail.d
+│   │   └── nginx.conf
+│   └── jail.local
+├── Makefile
+├── nginx                     # Reverse proxy to handle requests
+│   ├── conf.d
+│   │   └── erie.conf
+│   ├── mime.types
+│   ├── nginx.conf
+│   └── ssl
+├── NGINX_FAIL2BAN_SETUP.md
+└── README.md
 ```
 
-## 🌐 Web Interface
-
-The application provides an intuitive web interface:
-
-1. **Home Page**: Model overview and documentation
-2. **Optimization Page**: Interactive parameter input form
-3. **Results Page**: Detailed optimization results and visualizations
 
 ## 🔧 Requirements
 
 - Python 3.8+
-- Docker & Docker Compose (for containerized deployment)
-- SCIP Optimization Suite (included in PySCIPOpt)
+- Docker & Docker Compose
 
-## 📊 Features
+## License
 
-- Two optimization models (target-based and budget-based)
-- Interactive web interface with Bootstrap styling
-- Customizable parameters (filter efficiency, costs, targets)
-- Comprehensive results visualization
-- Production-ready with Nginx reverse proxy
-- Built-in security with Fail2ban
-
-## 📄 License
-
-[Add your license information here]
+MIT License
 
 ## 👥 Contributors
 
 [Add contributor information here]
 
-## 📧 Contact
 
-[Add contact information here]
