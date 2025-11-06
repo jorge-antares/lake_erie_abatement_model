@@ -112,7 +112,7 @@ def solveBBModel(budget: float, fixed_params: dict, calculated_params: dict) -> 
     w = cvxpy.Variable(shape=params["n_wwtps"], integer=True, name="w")
 
     # SOLVER
-    weight = array([1, 1, 1, 100, 50, 100])
+    weight = array([1, 8, 1, 60, 600, 300])
     weight = weight / weight.sum()
     model = cvxpy.Problem(
         cvxpy.Maximize(weight.T @ params["S"] @ x + weight.T @ params["W"] @ w),
