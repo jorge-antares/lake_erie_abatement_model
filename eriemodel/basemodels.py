@@ -36,8 +36,10 @@ s.t.
 
 import cvxpy
 import time
+import warnings
 from numpy import array
 
+warnings.filterwarnings("ignore", category=UserWarning)
 
 def solveTBModel(ztarget:list, fixed_params: dict, calculated_params: dict) -> dict:
     """

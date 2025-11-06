@@ -7,8 +7,12 @@ Testing script.
 
 """
 
-from erieparams import getFixedParameters, getCalculatedParams
-from basemodels import solveTBModel, solveBBModel
+try:
+    from erieparams import getFixedParameters, getCalculatedParams
+    from basemodels import solveTBModel, solveBBModel
+except ImportError:
+    from eriemodel.erieparams import getFixedParameters, getCalculatedParams
+    from eriemodel.basemodels import solveTBModel, solveBBModel
 
 
 fixed_params = getFixedParameters()
@@ -47,4 +51,4 @@ if __name__ == "__main__":
     print("+" * 40)
     print("TEST BUDGET-BASED MODEL")
     print("+" * 40)
-    #test_modelAlt()
+    test_modelAlt()
