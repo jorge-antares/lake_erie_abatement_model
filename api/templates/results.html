@@ -175,13 +175,45 @@
         {% endif %}
 
         <div class="text-center mt-4">
-            <a href="/optimize" class="btn btn-primary btn-lg">
-                <i class="bi bi-arrow-repeat"></i> Run Another Optimization
+            {% if not error %}
+            <button id="downloadJson" class="btn btn-success btn-lg me-3 mb-3">
+                <i class="bi bi-download"></i> Download (JSON)
+            </button>
+            {% endif %}
+            <a href="/optimize" class="btn btn-primary btn-lg mb-3">
+                <i class="bi bi-arrow-repeat"></i> Run Another
             </a>
-            <a href="/" class="btn btn-secondary btn-lg ms-3">
+            <a href="/" class="btn btn-secondary btn-lg ms-3 mb-3">
                 <i class="bi bi-house"></i> Home
             </a>
         </div>
     </div>
 </div>
+
+{% if not error %}
+<script>
+document.getElementById('downloadJson').addEventListener('click', function() {
+    const data = {
+        model_info: {{ model_info | tojson }},
+        results: {{ results | tojson }}
+    };
+    
+    const jsonStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    
+    // Create filename with timestamp
+    const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
+    const modelType = data.model_info.type.replace(/\s+/g, '_').toLowerCase();
+    a.download = `${modelType}_${timestamp}.json`;
+    
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+});
+</script>
+{% endif %}
 {% endblock %}
