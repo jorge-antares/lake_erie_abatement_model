@@ -44,23 +44,30 @@
         <!-- Agricultural Abatement -->
         <div class="results-section">
             <h4 class="text-primary mb-3">Agricultural Abatement</h4>
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Region</th>
-                            <th>Abatement (tonnes P/year)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for region, value in results.agricultural_abatement.items() %}
-                        <tr>
-                            <td><strong>{{ region }}</strong></td>
-                            <td>{{ "%.2f"|format(value) }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Region</th>
+                                    <th>Abatement (tonnes P/year)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for region, value in results.agricultural_abatement.items() %}
+                                <tr>
+                                    <td><strong>{{ region }}</strong></td>
+                                    <td>{{ "%.2f"|format(value) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-6 position-relative">
+                    <canvas id="abatementChart" height="230"></canvas>
+                </div>
             </div>
         </div>
 
@@ -181,7 +188,7 @@
             </button>
             {% endif %}
             <a href="/optimize" class="btn btn-primary btn-lg mb-3">
-                <i class="bi bi-arrow-repeat"></i> Run Another
+                <i class="bi bi-arrow-repeat"></i> Another Run
             </a>
             <a href="/" class="btn btn-secondary btn-lg ms-3 mb-3">
                 <i class="bi bi-house"></i> Home
@@ -213,7 +220,62 @@ document.getElementById('downloadJson').addEventListener('click', function() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-});
+    });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    //Chart
+    const regions = ['SCR', 'LSC', 'DR', 'WB', 'CB', 'EB'];
+    const agroData = {{ results.agricultural_abatement | tojson }};
+    const wwtpData = {{ results.wwtp_abatement | tojson }};
+    console.log(agroData);
+    console.log(wwtpData);
+
+    const ctx = document.getElementById('abatementChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: regions,
+            datasets: [{
+                label: 'Agriculture',
+                data: regions.map(region => agroData[region].toFixed(2)),
+                backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                borderColor: 'rgba(54, 54, 54, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'WWTPs',
+                data: regions.map(region => wwtpData[region].toFixed(2)),
+                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                borderColor: 'rgba(54, 54, 54, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true
+                },
+                title: {
+                    display: true,
+                    text: 'Abatement (tonne/year)'
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true
+                },
+                y: {
+                    beginAtZero: true,
+                    stacked: true
+                }
+            }
+        }
+    });
+</script>
+
 {% endif %}
 {% endblock %}
