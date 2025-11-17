@@ -50,6 +50,8 @@ services:
       - TZ=America/Toronto
       - F2B_LOG_LEVEL=INFO
       - F2B_DB_PURGE_AGE=30d
+    networks:
+      - erie_network
 
 networks:
   erie_network:
