@@ -41,17 +41,18 @@
             </div>
         </div>
 
-        <!-- Agricultural Abatement -->
-        <div class="results-section">
-            <h4 class="text-primary mb-3">Agricultural Abatement</h4>
-            <div class="row">
-                <div class="col-md-6">
+        <!-- Abatement -->
+        <div class="row">
+            <div class="col-md-5">
+                <!-- Agriculture -->
+                <div class="results-section">
+                    <h4 class="text-primary mb-3">Agriculture</h4>
                     <div class="table-responsive">
                         <table class="table table-striped">
                             <thead class="table-dark">
                                 <tr>
                                     <th>Region</th>
-                                    <th>Abatement (tonnes P/year)</th>
+                                    <th>Abatement<br>(tonnes/year)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -65,52 +66,26 @@
                         </table>
                     </div>
                 </div>
-                <div class="col-md-6 position-relative">
-                    <canvas id="abatementChart" height="230"></canvas>
-                </div>
             </div>
-        </div>
-
-        <!-- WWTP Results -->
-        <div class="results-section">
-            <h4 class="text-primary mb-3">Wastewater Treatment Plant Results</h4>
-            <div class="row">
-                <div class="col-md-6">
-                    <h6>WWTP Investments Needed</h6>
+            <!-- WWTP Results-->
+            <div class="col-md-7">
+            <div class="results-section">
+                    <h4 class="text-primary mb-3">Wastewater Treatment Plants</h4>
                     <div class="table-responsive">
-                        <table class="table table-striped table-sm">
+                        <table class="table table-striped">
                             <thead class="table-dark">
                                 <tr>
                                     <th>Region</th>
-                                    <th>Number of WWTPs</th>
+                                    <th>WWTPs<br>upgraded</th>
+                                    <th>Abatement<br>(tonnes/year)</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for region, value in results.wwtp_investments.items() %}
+                                {% for region, plants in results.wwtp_investments.items() %}
                                 <tr>
                                     <td><strong>{{ region }}</strong></td>
-                                    <td>{{ value }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <h6>WWTP Abatement</h6>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-sm">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Region</th>
-                                    <th>Abatement (tonnes P/year)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for region, value in results.wwtp_abatement.items() %}
-                                <tr>
-                                    <td><strong>{{ region }}</strong></td>
-                                    <td>{{ "%.2f"|format(value) }}</td>
+                                    <td>{{ plants }}</td>
+                                    <td>{{ results.wwtp_abatement[region] }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -137,7 +112,7 @@
                         <tr>
                             <td><strong>{{ region }}</strong></td>
                             <td>{{ "%.4f"|format(results.concentration_changes[region]) }}</td>
-                            <td>{{ "%.4f"|format(results.load_changes[region]) }}</td>
+                            <td>{{ "%.4f"|format(results.steadystate_mass_change[region]) }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -145,11 +120,25 @@
             </div>
         </div>
 
+        <!-- WWTP Results -->
+        <div class="results-section">
+            <div class="row">
+            <div class="col-md-6 position-relative">
+                <h4 class="text-primary mb-3">Load Reduction</h4>
+                <canvas id="abatementChart" height="230"></canvas>
+            </div> 
+            <div class="col-md-6 position-relative">
+                <h4 class="text-primary mb-3">Response Reduction</h4>
+                <canvas id="responseChart" height="230"></canvas>
+            </div>
+            </div>
+        </div>
+
         <!-- Summary -->
         <div class="results-section">
             <h4 class="text-primary mb-3">Summary</h4>
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card text-center">
                         <div class="card-body">
                             <h5 class="card-title">Total Agricultural Abatement</h5>
@@ -158,7 +147,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card text-center">
                         <div class="card-body">
                             <h5 class="card-title">Total WWTP Abatement</h5>
@@ -167,12 +156,21 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card text-center">
                         <div class="card-body">
                             <h5 class="card-title">Total WWTPs Upgraded</h5>
                             <p class="card-text display-6">{{ results.total_wwtps }}</p>
                             <small class="text-muted">facilities</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Total P Removed From Water Bodies</h5>
+                            <p class="card-text display-6">{{ "%.1f"|format(results.total_steadystate_mass_change) }}</p>
+                            <small class="text-muted">tonnes P/year</small>
                         </div>
                     </div>
                 </div>
@@ -224,12 +222,10 @@ document.getElementById('downloadJson').addEventListener('click', function() {
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    //Chart
+    // Input Change Chart
     const regions = ['SCR', 'LSC', 'DR', 'WB', 'CB', 'EB'];
     const agroData = {{ results.agricultural_abatement | tojson }};
     const wwtpData = {{ results.wwtp_abatement | tojson }};
-    console.log(agroData);
-    console.log(wwtpData);
 
     const ctx = document.getElementById('abatementChart').getContext('2d');
 
@@ -271,6 +267,40 @@ document.getElementById('downloadJson').addEventListener('click', function() {
                 y: {
                     beginAtZero: true,
                     stacked: true
+                }
+            }
+        }
+    });
+    // Response Chart
+    const loadChanges = {{ results.steadystate_mass_change | tojson }};
+    const ctx2 = document.getElementById('responseChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: regions,
+            datasets: [{
+                label: 'P Removed from Water Body',
+                data: regions.map(region => loadChanges[region].toFixed(4)),
+                backgroundColor: 'rgba(255, 159, 64, 0.8)',
+                borderColor: 'rgba(54, 54, 54, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: 'P Removed from Water Bodies (tonnes)'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
                 }
             }
         }

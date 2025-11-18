@@ -157,10 +157,11 @@ async def run_optimization(
             "wwtp_abatement": dict(zip(fixed_params["region_names"], output["solution"]["wabate"]["value"])),
             "wwtp_investments": dict(zip(fixed_params["region_names"], output["solution"]["w"]["value"])),
             "concentration_changes": dict(zip(fixed_params["region_names"], output["solution"]["z"]["value"])),
-            "load_changes": dict(zip(fixed_params["region_names"], zload.tolist())),
+            "steadystate_mass_change": dict(zip(fixed_params["region_names"], zload.tolist())),
             "total_agro_abatement": float(np.sum(output["solution"]["x"]["value"])),
             "total_wwtp_abatement": float(np.sum(output["solution"]["wabate"]["value"])),
-            "total_wwtps": int(np.sum(output["solution"]["w"]["value"]))
+            "total_wwtps": int(np.sum(output["solution"]["w"]["value"])),
+            "total_steadystate_mass_change": float(np.sum(zload))
         }
         
         return templates.TemplateResponse("results.html", {
