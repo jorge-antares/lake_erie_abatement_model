@@ -44,6 +44,8 @@ services:
       - ./fail2ban/log:/var/log:ro
       - ./nginx/log:/remotelogs/nginx:ro
     restart: unless-stopped
+    depends_on:
+      - nginx
 
 networks:
   net:
