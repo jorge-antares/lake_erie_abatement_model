@@ -6,3 +6,7 @@ logs/
 *.log
 fail2ban/data/
 nginx/ssl/*
+**/action.d/*
+**/filter.d/*
+**/jail.d/*
+

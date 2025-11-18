@@ -1,0 +1,64 @@
+# Custom jail configuration for LEAM
+# This file overrides jail.conf settings
+
+[DEFAULT]
+# Ban action - defines what happens when an IP is banned
+banaction = iptables-multiport
+banaction_allports = iptables-allports
+
+# Default ban time and retry settings
+bantime = 1h
+findtime = 10m
+maxretry = 5
+
+# Email settings (optional)
+destemail = root@localhost
+sender = fail2ban@localhost
+mta = sendmail
+
+# Action shortcuts
+action_ = %(banaction)s[name=%(__name__)s, bantime="%(bantime)s", port="%(port)s", protocol="%(protocol)s", chain="%(chain)s"]
+action_mw = %(banaction)s[name=%(__name__)s, bantime="%(bantime)s", port="%(port)s", protocol="%(protocol)s", chain="%(chain)s"]
+action_mwl = %(banaction)s[name=%(__name__)s, bantime="%(bantime)s", port="%(port)s", protocol="%(protocol)s", chain="%(chain)s"]
+action = %(action_)s
+
+[nginx-http-auth]
+enabled  = true
+port     = http,https
+logpath  = /remotelogs/nginx/error.log
+maxretry = 3
+findtime = 5m
+bantime  = 2h
+
+[nginx-limit-req]
+enabled  = true
+port     = http,https
+logpath  = /remotelogs/nginx/error.log
+maxretry = 10
+findtime = 1m
+bantime  = 1h
+
+[nginx-badbots]
+enabled  = true
+port     = http,https
+logpath  = /remotelogs/nginx/access.log
+filter   = apache-badbots
+maxretry = 2
+findtime = 10m
+bantime  = 24h
+
+[nginx-botsearch]
+enabled  = true
+port     = http,https
+logpath  = /remotelogs/nginx/access.log
+maxretry = 2
+findtime = 10m
+bantime  = 24h
+
+[nginx-forbidden]
+enabled  = true
+port     = http,https
+logpath  = /remotelogs/nginx/error.log
+maxretry = 3
+findtime = 5m
+bantime  = 1h

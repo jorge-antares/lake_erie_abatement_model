@@ -1,10 +1,9 @@
 setup :
-	/bin/sh setup.sh
+	python3 -m venv .venv
+	./.venv/bin/pip install --upgrade pip
+	./.venv/bin/pip install -r requirements.txt
 
 test :
-	./cvxenv/bin/python src/test.py
-
-run :
-	./cvxenv/bin/python main.py
+	./.venv/bin/python eriemodel/test.py
 
 setuptest : setup test
