@@ -18,6 +18,7 @@ TARGET-BASED MODEL
     min x^T A x + b^T v
 s.t.
     S x + W v >= z_target
+    x <= c
     x >= 0
     v binary
     W = (S*L*F)
@@ -27,6 +28,7 @@ BUDGET-BASED MODEL
     max c^T ( S x + W v )
 s.t.
     x^T A x + b^T v <= budget
+    x <= c
     x >= 0
     v binary
     W = (S*L*F)
