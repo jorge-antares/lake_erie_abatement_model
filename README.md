@@ -1,10 +1,10 @@
-# Lake Erie Abatement Model (LEAM) #
+# LEAM - Lake Erie Abatement Model
 
 ## Description
 This repository contains the Lake Erie Abatement Model (LEAM) and a user interface built on FastAPI to communicate with it, as well as two additional services (Nginx, fail2ban) for hosting the interface on the web.
 
 ## LEAM
-LEAM is an quadratic program for the Canadian side of Lake Erie that determines the required abatement of total phosphorus on agricultural activities or end-of-pipe investments in wastewater treatment plants across the Canadian LE watersheds, such that a target reduction in P concentration is achieved at the lowest cost. An alternative formulation is presented where the model maximizes the P concentration reduction given a fixed budget to allocate on abatement measures.
+The core model of LEAM is an quadratic program for the Canadian side of Lake Erie that determines the required abatement of total phosphorus on agricultural activities or end-of-pipe investments in wastewater treatment plants across the Canadian LE watersheds, such that a target reduction in P concentration is achieved at the lowest cost. An alternative formulation is presented where the model maximizes the P concentration reduction given a fixed budget to allocate on abatement measures.
 
 The hydrological model used in this study considers the interdependence among six regions:
 - St. Claire River
@@ -17,15 +17,14 @@ The hydrological model used in this study considers the interdependence among si
 ### Target-Based Model
 The optimization model is:
 
-$$\min_{x,w}\quad x^T A x + b^T w$$
+$$\min_{x,v}\quad x^T A x + b^T v$$
 
 subject to:
 
-$$Sx + Ww ≥ z_{\rm Target}$$
-
+$$Sx + Wv ≥ z_{\rm Target}$$
 $$x \geq 0$$
 
-$$w_i \in \{0,1\}\quad \forall\ i$$
+$$v_i \in \{0,1\}\quad \forall\ i$$
 
 and its parameters are:
 
@@ -39,24 +38,26 @@ and its parameters are:
 ### Budget-Based Model
 This model has the same variables and parameters as Model I but has an additional parameter, $\alpha$, which expresses the relative weight or importance of concentration reductions on each region of the model. The objective function of Model I is introduced here as a constraint, and the phosphorus concentration constraint of Model I is introduced as the objective function.
 
-$$\max_{x,w}\quad \alpha^{\rm T} \big( Sx + Ww \big)$$
+$$\max_{x,w}\quad \alpha^{\rm T} \big( Sx + Wv \big)$$
 
 subject to:
 
-$$x^{T} A x + b^{T} w  \leq \text{budget}$$
+$$x^{T} A x + b^{T} v  \leq \text{budget}$$
 
 $$x \geq 0$$
 
-$$w_{i} \in \{0,1\}\quad \forall i.$$
+$$v_{i} \in \{0,1\}\quad \forall i.$$
 
 ---
 
-## Quick Start
+## Running the Application
 
-### Using Docker (Recommended)
+### Using Docker compose (Recommended)
 
 ```bash
+# 1. Create virtual environment
 docker compose up -d
+# 2. Open a browser and go to http://localhost:8000
 ```
 
 ### Manual Setup
@@ -74,39 +75,25 @@ pip install -r api/requirements.txt
 cd api
 python app.py
 
-# 4. Access the application at http://localhost:8000
+# 4. Open a browser and go to http://localhost:8000
 ```
-
-## Architecture
-The application uses a three-tier architecture with security:
-
-- **FastAPI**: Web application serving the optimization model
-- **Nginx**: Reverse proxy with rate limiting and security headers
-- **Fail2ban**: Intrusion prevention system to ban malicious IPs
-
-
-## Security Features
-
-- **Rate Limiting**: Prevents API abuse (10 req/s general, 5 req/s optimization)
-- **Fail2ban Protection**: Automatic IP banning for malicious activity
-- **Security Headers**: X-Frame-Options, CSP, XSS Protection
-- **Request Filtering**: Blocks common exploit attempts
-- **Connection Limiting**: Max 10 concurrent connections per IP
 
 ## Project Structure
 
 ```
 .
 ├── api
-│   ├── app.py                # API Server
+│   ├── app.py
 │   ├── requirements.txt
 │   ├── static
 │   │   ├── css
-│   │   │   ├── bootstrap-icons.css
 │   │   │   └── bootstrap.min.css
 │   │   ├── img
-│   │   │   └── function.svg
+│   │   │   ├── function.svg
+│   │   │   ├── lakeerie.jpg
+│   │   │   └── regions.svg
 │   │   └── js
+│   │       └── bootstrap.bundle.min.js
 │   └── templates
 │       ├── base.html
 │       ├── index.html
@@ -115,34 +102,41 @@ The application uses a three-tier architecture with security:
 │       └── results.html
 ├── docker-compose.yaml
 ├── Dockerfile
-├── eriemodel                 # Core model implementation
+├── eriemodel
 │   ├── __init__.py
 │   ├── basemodels.py
 │   ├── erieparams.py
-│   ├── mod_requirements.txt
+│   ├── py_reqs.txt
 │   ├── scenarios.py
 │   ├── test.py
 │   └── wwtpdata
 │       ├── fvec.csv
 │       └── Lmat.csv
-├── fail2ban                  # Bans malicious requests
+├── fail2ban
 │   ├── config
-│   ├── filter.d
-│   │   ├── nginx-400.conf
-│   │   ├── nginx-403.conf
-│   │   └── nginx-post-limit.conf
-│   ├── jail.d
-│   │   └── nginx.conf
-│   └── jail.local
+│   │   ├── fail2ban
+│   │   │   ├── action.d
+│   │   │   ├── fail2ban.conf
+│   │   │   ├── fail2ban.sqlite3
+│   │   │   ├── filter.d
+│   │   │   ├── jail.conf
+│   │   │   ├── jail.d
+│   │   │   ├── jail.local
+│   │   │   ├── paths-common.conf
+│   │   │   ├── paths-lsio.conf
+│   │   │   └── README.md
+│   │   └── log
+│   │       └── fail2ban
+│   └── log
 ├── Makefile
-├── nginx                     # Reverse proxy to handle requests
+├── nginx
 │   ├── conf.d
-│   │   └── erie.conf
-│   ├── mime.types
-│   ├── nginx.conf
+│   │   └── nginx.conf
+│   ├── log
 │   └── ssl
-├── NGINX_FAIL2BAN_SETUP.md
 └── README.md
+
+22 directories, 32 files
 ```
 
 

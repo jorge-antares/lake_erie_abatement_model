@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Optimization Results{% endblock %}
+{% block title %}LEAM - Results{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -34,7 +34,7 @@
                     <p><strong>Total Cost:</strong> ${{ "%.2f"|format(model_info.objective) }} {{ model_info.objective_units }}</p>
                     {% else %}
                     <p><strong>Objective Value:</strong> {{ "%.4f"|format(model_info.objective) }} {{ model_info.objective_units }}</p>
-                    <p><strong>Budget Used:</strong> ${{ model_info.budget }} million CAD</p>
+                    <p><strong>Total Cost:</strong> ${{ "%.2f"|format(model_info.total_cost) }} million CAD</p>
                     {% endif %}
                     <p><strong>Solve Time:</strong> {{ model_info.solve_time }} seconds</p>
                 </div>
@@ -81,7 +81,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for region, plants in results.wwtp_investments.items() %}
+                                {% for region, plants in results.wwtp_upgrades.items() %}
                                 <tr>
                                     <td><strong>{{ region }}</strong></td>
                                     <td>{{ plants }}</td>
@@ -96,7 +96,7 @@
         </div>
 
         <!-- Phosphorus Changes -->
-        <div class="results-section">
+        <div class="results-section col-lg-8">
             <h4 class="text-primary mb-3">Phosphorus Change</h4>
             <div class="table-responsive">
                 <table class="table table-striped">
@@ -104,14 +104,14 @@
                         <tr>
                             <th>Region</th>
                             <th>Concentration Reduction (ppb)</th>
-                            <th>P removed from water body (tonnes)</th>
+                            <th>TP removed from water body (tonnes)</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for region in results.concentration_changes.keys() %}
+                        {% for region in results.concentration_change.keys() %}
                         <tr>
                             <td><strong>{{ region }}</strong></td>
-                            <td>{{ "%.4f"|format(results.concentration_changes[region]) }}</td>
+                            <td>{{ "%.4f"|format(results.concentration_change[region]) }}</td>
                             <td>{{ "%.4f"|format(results.steadystate_mass_change[region]) }}</td>
                         </tr>
                         {% endfor %}
@@ -141,7 +141,7 @@
                 <div class="col-md-3">
                     <div class="card text-center">
                         <div class="card-body">
-                            <h5 class="card-title">Total Agricultural Abatement</h5>
+                            <h5 class="card-title">Agricultural Abatement</h5>
                             <p class="card-text display-6">{{ "%.1f"|format(results.total_agro_abatement) }}</p>
                             <small class="text-muted">tonnes P/year</small>
                         </div>
@@ -150,7 +150,7 @@
                 <div class="col-md-3">
                     <div class="card text-center">
                         <div class="card-body">
-                            <h5 class="card-title">Total WWTP Abatement</h5>
+                            <h5 class="card-title">WWTP Abatement</h5>
                             <p class="card-text display-6">{{ "%.1f"|format(results.total_wwtp_abatement) }}</p>
                             <small class="text-muted">tonnes P/year</small>
                         </div>
@@ -159,7 +159,7 @@
                 <div class="col-md-3">
                     <div class="card text-center">
                         <div class="card-body">
-                            <h5 class="card-title">Total WWTPs Upgraded</h5>
+                            <h5 class="card-title">WWTPs Upgraded</h5>
                             <p class="card-text display-6">{{ results.total_wwtps }}</p>
                             <small class="text-muted">facilities</small>
                         </div>
@@ -168,9 +168,9 @@
                 <div class="col-md-3">
                     <div class="card text-center">
                         <div class="card-body">
-                            <h5 class="card-title">Total P Removed From Water Bodies</h5>
+                            <h5 class="card-title">TP Removed From Water Bodies</h5>
                             <p class="card-text display-6">{{ "%.1f"|format(results.total_steadystate_mass_change) }}</p>
-                            <small class="text-muted">tonnes P/year</small>
+                            <small class="text-muted">tonnes</small>
                         </div>
                     </div>
                 </div>
@@ -211,8 +211,9 @@ document.getElementById('downloadJson').addEventListener('click', function() {
     
     // Create filename with timestamp
     const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
-    const modelType = data.model_info.type.replace(/\s+/g, '_').toLowerCase();
-    a.download = `${modelType}_${timestamp}.json`;
+    // e.g., "Budget-Constrained" -> bcm, "Target-Based" -> tbm
+    const modelType = data.model_info.type[0] + data.model_info.type[data.model_info.type.indexOf('-') + 1] + 'm';
+    a.download = `${modelType.toLowerCase()}_${timestamp}.json`;
     
     document.body.appendChild(a);
     a.click();

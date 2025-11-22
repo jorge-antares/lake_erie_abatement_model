@@ -6,13 +6,14 @@
 Testing script.
 
 """
+import json
 
 try:
     from erieparams import getFixedParameters, getCalculatedParams
-    from basemodels import solveTBModel, solveBBModel
+    from basemodels import solveTBModel, solveBCModel
 except ImportError:
     from eriemodel.erieparams import getFixedParameters, getCalculatedParams
-    from eriemodel.basemodels import solveTBModel, solveBBModel
+    from eriemodel.basemodels import solveTBModel, solveBCModel
 
 
 fixed_params = getFixedParameters()
@@ -31,14 +32,15 @@ def test_model():
             0.5,  #   EB
         ]
     sol = solveTBModel(ztarget, fixed_params, calculated_params)
+    print(json.dumps(sol, indent=4))
     return True
 
 
 def test_modelAlt():
     # Budget in million CAD
     budget = 500
-    sol = solveBBModel(budget, fixed_params, calculated_params)
-    #print(json.dumps(sol, indent=4))
+    sol = solveBCModel(budget, fixed_params, calculated_params)
+    print(json.dumps(sol, indent=4))
     return True
 
 

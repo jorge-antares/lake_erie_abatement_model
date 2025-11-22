@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Mathematical Model Documentation{% endblock %}
+{% block title %}LEAM - Dox{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -16,12 +16,12 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h5>Objective Function:</h5>
-                    $$\min f(\mathbf{x}, \mathbf{w}) = \mathbf{x}^T \mathbf{A} \mathbf{x} + \mathbf{b}^T \mathbf{w}$$
+                    $$\min f(\mathbf{x}, \mathbf{v}) = \mathbf{x}^T \mathbf{A} \mathbf{x} + \mathbf{b}^T \mathbf{v}$$
                     
                     <h5>Subject to:</h5>
-                    $$\mathbf{S} \mathbf{x} + \mathbf{W} \mathbf{w} \geq \mathbf{z}_{target}$$
+                    $$\mathbf{S} \mathbf{x} + \mathbf{W} \mathbf{v} \geq \mathbf{z}_{target}$$
                     $$\mathbf{x} \geq 0$$
-                    $$\mathbf{w} \in \{0,1\}^{n}$$
+                    $$\mathbf{v} \in \{0,1\}^{I}$$
                     
                     <h5>Where:</h5>
                     $$\mathbf{W} = \mathbf{S} \times \mathbf{L} \times \mathbf{F}$$
@@ -32,12 +32,12 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h5>Objective Function:</h5>
-                    $$\max g(\mathbf{x}, \mathbf{w}) = \mathbf{c}^T (\mathbf{S} \mathbf{x} + \mathbf{W} \mathbf{w})$$
+                    $$\max g(\mathbf{x}, \mathbf{v}) = \mathbf{\alpha}^T (\mathbf{S} \mathbf{x} + \mathbf{W} \mathbf{v})$$
                     
                     <h5>Subject to:</h5>
-                    $$\mathbf{x}^T \mathbf{A} \mathbf{x} + \mathbf{b}^T \mathbf{w} \leq B$$
+                    $$\mathbf{x}^T \mathbf{A} \mathbf{x} + \mathbf{b}^T \mathbf{v} \leq B$$
                     $$\mathbf{x} \geq 0$$
-                    $$\mathbf{w} \in \{0,1\}^{n}$$
+                    $$\mathbf{v} \in \{0,1\}^{I}$$
                 </div>
             </div>
             
@@ -57,49 +57,50 @@
                             <td>$\mathbf{x}$</td>
                             <td>Agricultural abatement by region</td>
                             <td>tonne/year</td>
-                            <td>$\mathbb{R}^{m}_+$</td>
+                            <td>$\mathbb{R}^{r}_+$</td>
                         </tr>
                         <tr>
-                            <td>$\mathbf{w}$</td>
+                            <td>$\mathbf{v}$</td>
                             <td>Binary variables for WWTP investments</td>
                             <td>unitless</td>
-                            <td>$\{0,1\}^{n}$</td>
+                            <td>$\{0,1\}^{I}$</td>
                         </tr>
                         <tr>
                             <td>$\mathbf{A}$</td>
                             <td>Agricultural cost matrix (quadratic)</td>
                             <td>Million CAD/(tonne<sup>2</sup> year)</td>
-                            <td>$\mathbb{R}^{m \times m}$</td>
+                            <td>$\mathbb{R}^{r \times r}$</td>
                         </tr>
                         <tr>
                             <td>$\mathbf{b}$</td>
                             <td>WWTP maintenance costs</td>
                             <td>Million CAD/(thousand m<sup>3</sup> year)</td>
-                            <td>$\mathbb{R}^{n}$</td>
+                            <td>$\mathbb{R}^{I}$</td>
                         </tr>
                         <tr>
                             <td>$\mathbf{S}$</td>
                             <td>Steady state mass balance matrix</td>
                             <td>ppb/tonne</td>
-                            <td>$\mathbb{R}^{m \times m}$</td>
+                            <td>$\mathbb{R}^{r \times r}$</td>
                         </tr>
                         <tr>
                             <td>$\mathbf{L}$</td>
                             <td>Matrix that links WWTPs to regions</td>
                             <td>unitless</td>
-                            <td>$\mathbb{R}^{m \times n}$</td>
+                            <td>$\mathbb{R}^{r \times I}$</td>
                         </tr>
                         <tr>
                             <td>$\mathbf{F}$</td>
                             <td>Diagonal matrix of WWTP effective abatement</td>
                             <td>tonne/year</td>
-                            <td>$\mathbb{R}^{n \times n}$</td>
+                            <td>$\mathbb{R}^{I \times I}$</td>
                         </tr>
                         <tr>
-                            <td>$\mathbf{c}$</td>
+                            <td>$\mathbf{\alpha}$</td>
                             <td>Relative weight vector for regions</td>
                             <td>unitless</td>
-                            <td>$\mathbb{R}^{m}$</td>
+                            <td>$\mathbb{R}^{r}$</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>

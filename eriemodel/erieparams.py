@@ -47,6 +47,12 @@ def getFixedParameters() -> dict:
             ]
     ) * 1e-3
 
+    # Cropland
+    cropland = [606, 7138, 281, 472, 1956, 5694]  # km2
+    export_coeff = 78.5  # kg/km2-year
+    export_coeff_tonnes = export_coeff * 1e-3  # t/km2-year
+    c = array(cropland) * export_coeff_tonnes  # t/year
+
     return {
         "region_names": ["SCR", "LSC", "DR", "WB", "CB", "EB"],
         "max_wwtp_effl": ceil(fvec.max()),
@@ -55,6 +61,7 @@ def getFixedParameters() -> dict:
         "fvec": fvec,
         "S": S,
         "L": L,
+        "c": c,
         "volume_km3": {
             "SCR": 0.4,
             "LSC": 4.6,
@@ -68,22 +75,22 @@ def getFixedParameters() -> dict:
 
 def getCalculatedParams(
         fixed_params:dict,
-        P_ppm:float = 2.737,            # P concentration in WWTP [mg/L]
-        filter_eff:float = 0.4,         # unitless
-        maintenance_cost:float = 1e-4,  # [million CAD / (thousand m3 * year)]
-        wwtp_effluent_threshold:float = 1e8,    # thousand m3 / year
-        agro_abatecost:list = [2.88e-2, 2.44e-3, 6.2e-2, 3.69e-2, 8.92e-3, 3.08e-3] # [million CAD / t^2-year]
+        P_ppm:float = 1,                # P concentration in WWTP after current treatment [mg/L]
+        filter_eff:float = 0.95,        # unitless
+        maintenance_cost:float = 1.3e-3,# [million CAD / (thousand m3 * year)]
+        wwtp_effluent_threshold:float = 20000,    # thousand m3 / year
+        agro_abatecost:list = [7.3e-3, 6.11e-4, 1.55e-2, 9.24e-3, 2.23e-3, 7.66e-4] # [million CAD / t^2-year]
         ) -> dict:
     """
     Agriculture abatement default cost matrix A
     A = diag(array(
         [
-            (0.004) * 7.20,  #  SCR
-            (0.004) * 0.61,  #  LCS
-            (0.004) * 15.5,  #   DR
-            (0.004) * 9.24,  #   WB
-            (0.004) * 2.23,  #   CB
-            (0.004) * 0.77,  #   EB
+            (0.001) * 7.20,  #  SCR
+            (0.001) * 0.61,  #  LCS
+            (0.001) * 15.5,  #   DR
+            (0.001) * 9.24,  #   WB
+            (0.001) * 2.23,  #   CB
+            (0.001) * 0.77,  #   EB
         ]
     ))
     """
@@ -95,7 +102,7 @@ def getCalculatedParams(
     
     return {
         "b": maintenance_cost * fixed_params["fvec"].reshape(-1),
-        "u_w": fixed_params["fvec"] <= wwtp_effluent_threshold,
+        "u_w": (fixed_params["fvec"] <= wwtp_effluent_threshold).reshape(-1).astype(int),
         "W": fixed_params["S"] @ fixed_params["L"] @ F,
         "A": diag(array(agro_abatecost)),
         "F": F

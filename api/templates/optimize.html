@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Optimization Parameters{% endblock %}
+{% block title %}LEAM - Optimize{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -14,19 +14,19 @@
                 <div class="col-md-6">
                     <h6>Target-Based:</h6>
                     <p>
-                        $$\min \mathbf{x}^T \mathbf{A} \mathbf{x} + \mathbf{b}^T \mathbf{w}$$
+                        $$\min \mathbf{x}^T \mathbf{A} \mathbf{x} + \mathbf{b}^T \mathbf{v}$$
                         subject to:
-                        $$\mathbf{S} \mathbf{x} + \mathbf{W} \mathbf{w} \geq \mathbf{z}_{target}$$
-                        $$\mathbf{x} \geq 0, \quad \mathbf{w} \in \{0,1\}^{n}$$
+                        $$\mathbf{S} \mathbf{x} + \mathbf{W} \mathbf{v} \geq \mathbf{z}_{target}$$
+                        $$\mathbf{x} \geq 0, \quad \mathbf{v} \in \{0,1\}^{I}$$
                     </p>
                 </div>
                 <div class="col-md-6">
-                    <h6>Budget-Based:</h6>
+                    <h6>Budget-Constrained:</h6>
                     <p>
-                        $$\max \mathbf{c}^T (\mathbf{S} \mathbf{x} + \mathbf{W} \mathbf{w})$$
+                        $$\max \mathbf{\alpha}^T (\mathbf{S} \mathbf{x} + \mathbf{W} \mathbf{v})$$
                         subject to:
-                        $$\mathbf{x}^T \mathbf{A} \mathbf{x} + \mathbf{b}^T \mathbf{w} \leq B$$
-                        $$\mathbf{x} \geq 0, \quad \mathbf{w} \in \{0,1\}^{n}$$
+                        $$\mathbf{x}^T \mathbf{A} \mathbf{x} + \mathbf{b}^T \mathbf{v} \leq B$$
+                        $$\mathbf{x} \geq 0, \quad \mathbf{v} \in \{0,1\}^{I}$$
                     </p>
                 </div>
             </div>
@@ -34,14 +34,14 @@
                 <h6>Where:</h6>
                 <ul class="list-unstyled">
                     <li>$\mathbf{x}$ : Agricultural abatement by region (tonnes/year)</li>
-                    <li>$\mathbf{w}$ : Binary variables for WWTP investments (unitless)</li>
+                    <li>$\mathbf{v}$ : Binary variables for WWTP investments (unitless)</li>
                     <li>$\mathbf{A}$ : Agricultural abatement cost matrix (Million CAD/(tonne<sup>2</sup> year))</li>
                     <li>$\mathbf{b}$ : WWTP investment and maintenance costs (Million CAD/(thousand m<sup>3</sup> year))</li>
                     <li>$\mathbf{S}$ : Steady state mass balance matrix (ppb/tonne)</li>
                     <li>$\mathbf{W} = \mathbf{S} \times \mathbf{L} \times \mathbf{F}$ : WWTP effective load matrix (tonne/year)</li>
-                    <li>$\mathbf{c}$ : Relative weight vector (unitless)</li>
+                    <li>$\mathbf{\alpha}$ : Relative weight vector (unitless)</li>
                     <li>$B$ : Budget constraint (Million CAD)</li>
-                    <li>$n$ : Available wastewater treatment plants</li>
+                    <li>$I$ : Available wastewater treatment plants</li>
                 </ul>
             </div>
         </div>
@@ -78,34 +78,58 @@
                 <p class="text-muted mb-3">Specify the target phosphorus concentration reduction for each region in parts per billion (µg/L).</p>
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label for="target_scr" class="form-label">SCR (St. Clair River)</label>
+                        <label for="target_scr" class="form-label">
+                            SCR (St. Clair River)
+                        </label>
                         <input type="number" class="form-control" id="target_scr" name="target_scr" value="0.0" step="0.001" min="0">
-                        <div class="form-text">1 ppb = 0.4 tonnes</div>
+                        <div class="form-text">
+                            1 ppb = 0.4 tonnes
+                        </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="target_lsc" class="form-label">LSC (Lake St. Clair)</label>
+                        <label for="target_lsc" class="form-label">
+                            LSC (Lake St. Clair)
+                        </label>
                         <input type="number" class="form-control" id="target_lsc" name="target_lsc" value="0.0" step="0.001" min="0">
-                        <div class="form-text">1 ppb = 4.6 tonnes</div>
+                        <div class="form-text">
+                            1 ppb = 4.6 tonnes
+                        </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="target_dr" class="form-label">DR (Detroit River)</label>
+                        <label for="target_dr" class="form-label">
+                            DR (Detroit River)
+                        </label>
                         <input type="number" class="form-control" id="target_dr" name="target_dr" value="0.0" step="0.001" min="0">
-                        <div class="form-text">1 ppb = 0.4 tonnes</div>
+                        <div class="form-text">
+                            1 ppb = 0.4 tonnes
+                        </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="target_wb" class="form-label">WB (Western Basin)</label>
+                        <label for="target_wb" class="form-label">
+                            WB (Western Basin)
+                        </label>
                         <input type="number" class="form-control" id="target_wb" name="target_wb" value="0.0" step="0.001" min="0">
-                        <div class="form-text">1 ppb = 27.8 tonnes</div>
+                        <div class="form-text">
+                            1 ppb = 27.8 tonnes
+                        </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="target_cb" class="form-label">CB (Central Basin)</label>
+                        <label for="target_cb" class="form-label">
+                            CB (Central Basin)
+                        </label>
                         <input type="number" class="form-control" id="target_cb" name="target_cb" value="0.31" step="0.001" min="0">
-                        <div class="form-text">1 ppb = 318.7 tonnes<br>(E.g. 0.31 ppb = 100 tonnes)</div>
+                        <div class="form-text">
+                            1 ppb = 318.7 tonnes<br>(E.g. 0.31 ppb = 100 tonnes)
+                        </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="target_eb" class="form-label">EB (Eastern Basin)</label>
+                        <label for="target_eb" class="form-label">
+                            EB (Eastern Basin)
+                        </label>
                         <input type="number" class="form-control" id="target_eb" name="target_eb" value="0.0" step="0.001" min="0">
-                        <div class="form-text">1 ppb = 159.3 tonnes</div>
+                        <div class="form-text">
+                            1 ppb = 159.3 tonnes
+                        </div>
                     </div>
                 </div>
             </div>
@@ -115,9 +139,13 @@
                 <h4 class="text-primary mb-3">Budget Constraint</h4>
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="budget" class="form-label">Budget (Million CAD)</label>
-                        <input type="number" class="form-control" id="budget" name="budget" value="500" step="1" min="0">
-                        <div class="form-text">Maximum budget available for abatement measures</div>
+                        <label for="budget" class="form-label">
+                            Budget (Million CAD)
+                        </label>
+                        <input type="number" class="form-control" id="budget" name="budget" value="100" step="1" min="0">
+                        <div class="form-text">
+                            Maximum budget available for abatement measures
+                        </div>
                     </div>
                 </div>
             </div>
@@ -127,23 +155,34 @@
                 <h4 class="text-primary mb-3">WWTP Parameters</h4>
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label for="filter_efficiency" class="form-label">WWTP New Technology<br>Efficiency: (0 - 1)</label>
-                        <input type="number" class="form-control" id="filter_efficiency" name="filter_efficiency" value="0.4" step="0.01" min="0" max="1">
-                        <div class="form-text">Default: 0.4</div>
+                        <label for="filter_efficiency" class="form-label">
+                            WWTP New Technology<br>Efficiency: (0 - 1)
+                        </label>
+                        <input type="number" class="form-control" id="filter_efficiency" name="filter_efficiency" value="0.95" step="0.01" min="0" max="1">
+                        <div class="form-text">
+                            Default: 0.95
+                        </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="maintenance_cost" class="form-label">Annualized Cost<br>(Invest. + Maintenance)</label>
-                        <input type="number" class="form-control" id="maintenance_cost" name="maintenance_cost" value="0.001" step="0.00001" min="0">
-                        <div class="form-text">Million CAD per (thousand m³ × year)</div>
+                        <label for="maintenance_cost" class="form-label">
+                            Annual Cost<br>(Invest. + Maintenance)
+                        </label>
+                        <input type="number" class="form-control" id="maintenance_cost" name="maintenance_cost" value="0.0013" step="0.00001" min="0">
+                        <div class="form-text">
+                            Million CAD per (thousand m³ * year)
+                        </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="wwtp_effluent_threshold" class="form-label">Effluent Threshold<br>(exclude larger plants)</label>
-                        <input type="number" class="form-control" id="wwtp_effluent_threshold" name="wwtp_effluent_threshold" value="1000000" step="10" min="0">
-                        <div class="form-text">Thousand m³/year<br>(e.g., Kitchener WWTP: 25,000)</div>
+                        <label for="wwtp_effluent_threshold" class="form-label">
+                            Effluent Threshold<br>(exclude larger plants)
+                        </label>
+                        <input type="number" class="form-control" id="wwtp_effluent_threshold" name="wwtp_effluent_threshold" value="20000" step="1" min="0">
+                        <div class="form-text">
+                            Thousand m³/year<br>(e.g., Kitchener WWTP: 25,000)
+                        </div>
                     </div>
                 </div>
             </div>
-
             <!-- Agricultural Cost Parameters -->
             <div class="form-section">
                 <h4 class="text-primary mb-3">Agricultural Abatement Costs</h4>
@@ -151,34 +190,58 @@
                 Default values assume the same underlying cost function per unit of area and are scaled for total cropland area of the region.</p>
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label for="agro_cost_scr" class="form-label">SCR (St. Clair River)</label>
+                        <label for="agro_cost_scr" class="form-label">
+                            SCR (St. Clair River)
+                        </label>
                         <input type="number" class="form-control" id="agro_cost_scr" name="agro_cost_scr" value="0.0288" step="0.0001" min="0">
-                        <div class="form-text">Default: 0.0288</div>
+                        <div class="form-text">
+                            Default: 0.0288
+                        </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="agro_cost_lsc" class="form-label">LSC (Lake St. Clair)</label>
+                        <label for="agro_cost_lsc" class="form-label">
+                            LSC (Lake St. Clair)
+                        </label>
                         <input type="number" class="form-control" id="agro_cost_lsc" name="agro_cost_lsc" value="0.0024" step="0.0001" min="0">
-                        <div class="form-text">Default: 0.0024</div>
+                        <div class="form-text">
+                            Default: 0.0024
+                        </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="agro_cost_dr" class="form-label">DR (Detroit River)</label>
+                        <label for="agro_cost_dr" class="form-label">
+                            DR (Detroit River)
+                        </label>
                         <input type="number" class="form-control" id="agro_cost_dr" name="agro_cost_dr" value="0.062" step="0.0001" min="0">
-                        <div class="form-text">Default: 0.062</div>
+                        <div class="form-text">
+                            Default: 0.062
+                        </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="agro_cost_wb" class="form-label">WB (Western Basin)</label>
+                        <label for="agro_cost_wb" class="form-label">
+                            WB (Western Basin)
+                        </label>
                         <input type="number" class="form-control" id="agro_cost_wb" name="agro_cost_wb" value="0.0369" step="0.0001" min="0">
-                        <div class="form-text">Default: 0.0369</div>
+                        <div class="form-text">
+                            Default: 0.0369
+                        </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="agro_cost_cb" class="form-label">CB (Central Basin)</label>
+                        <label for="agro_cost_cb" class="form-label">
+                            CB (Central Basin)
+                        </label>
                         <input type="number" class="form-control" id="agro_cost_cb" name="agro_cost_cb" value="0.0089" step="0.0001" min="0">
-                        <div class="form-text">Default: 0.0089</div>
+                        <div class="form-text">
+                            Default: 0.0089
+                        </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="agro_cost_eb" class="form-label">EB (Eastern Basin)</label>
+                        <label for="agro_cost_eb" class="form-label">
+                            EB (Eastern Basin)
+                        </label>
                         <input type="number" class="form-control" id="agro_cost_eb" name="agro_cost_eb" value="0.0031" step="0.0001" min="0">
-                        <div class="form-text">Default: 0.0031</div>
+                        <div class="form-text">
+                            Default: 0.0031
+                        </div>
                     </div>
                 </div>
             </div>

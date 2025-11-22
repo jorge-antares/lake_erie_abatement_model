@@ -8,11 +8,11 @@ import os
 import sys
 
 try:
-    from eriemodel.basemodels import solveBBModel, solveTBModel
+    from eriemodel.basemodels import solveBCModel, solveTBModel
     from eriemodel.erieparams import getFixedParameters, getCalculatedParams
 except ModuleNotFoundError:
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../eriemodel')))
-    from basemodels import solveBBModel, solveTBModel
+    from basemodels import solveBCModel, solveTBModel
     from erieparams import getFixedParameters, getCalculatedParams
 
 
@@ -116,11 +116,11 @@ async def run_optimization(
             if not output["status"] or output["status"] in ["infeasible", "unbounded"]:
                 return templates.TemplateResponse("results.html", {
                     "request": request,
-                    "error": f"No feasible solution found. Status: {output.get('status', 'unknown')}. {output.get('message', '')}"
+                    "error": f"Input requirements too stringent. Status: {output.get('status', 'unknown')}. {output.get('message', '')}"
                 })
             
             model_info = {
-                "type": "Target-Based",
+                "type": output.get("model_type", "Target-Based"),
                 "status": output["status"],
                 "solve_time": round(output["solution"]["solve_time"]["value"], 2),
                 "objective": output["solution"]["obj"]["value"],
@@ -129,7 +129,7 @@ async def run_optimization(
             
         else:
             # Budget-based optimization
-            output = solveBBModel(budget, fixed_params, calc_params)
+            output = solveBCModel(budget, fixed_params, calc_params)
             
             # Check if solution was found
             if not output["status"] or output["status"] in ["infeasible", "unbounded"]:
@@ -139,28 +139,29 @@ async def run_optimization(
                 })
             
             model_info = {
-                "type": "Budget-Based",
+                "type": output.get("model_type", "Budget-Constrained"),
                 "status": output["status"],
                 "solve_time": round(output["solution"]["solve_time"]["value"],2),
                 "objective": output["solution"]["obj"]["value"],
                 "objective_units": output["solution"]["obj"]["units"],
-                "budget": budget
+                "budget": budget,
+                "total_cost": output["solution"]["cost"]["value"]
             }
         
-        # Build unified results from output (works for both models)
+        # Build unified results from output
         volume_array = np.array([fixed_params["volume_km3"][region] for region in fixed_params["region_names"]])
         z_values = np.array(output["solution"]["z"]["value"])
         zload = z_values * volume_array
         
         results = {
             "agricultural_abatement": dict(zip(fixed_params["region_names"], output["solution"]["x"]["value"])),
-            "wwtp_abatement": dict(zip(fixed_params["region_names"], output["solution"]["wabate"]["value"])),
-            "wwtp_investments": dict(zip(fixed_params["region_names"], output["solution"]["w"]["value"])),
-            "concentration_changes": dict(zip(fixed_params["region_names"], output["solution"]["z"]["value"])),
+            "wwtp_abatement": dict(zip(fixed_params["region_names"], output["solution"]["wwtp_abate"]["value"])),
+            "wwtp_upgrades": dict(zip(fixed_params["region_names"], output["solution"]["v_regional"]["value"])),
+            "concentration_change": dict(zip(fixed_params["region_names"], output["solution"]["z"]["value"])),
             "steadystate_mass_change": dict(zip(fixed_params["region_names"], zload.tolist())),
             "total_agro_abatement": float(np.sum(output["solution"]["x"]["value"])),
-            "total_wwtp_abatement": float(np.sum(output["solution"]["wabate"]["value"])),
-            "total_wwtps": int(np.sum(output["solution"]["w"]["value"])),
+            "total_wwtp_abatement": float(np.sum(output["solution"]["wwtp_abate"]["value"])),
+            "total_wwtps": int(np.sum(output["solution"]["v"]["value"])),
             "total_steadystate_mass_change": float(np.sum(zload))
         }
         

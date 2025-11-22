@@ -10,25 +10,25 @@ the Lake Erie abatement optimization model.
 
 DECISION VARIABLES
     x - Agro abatement by region (metric tonnes per year)
-    w - Binary vector where w[i] = 1 if WWTP i is upgraded,
+    v - Binary vector where v[i] = 1 if WWTP i is upgraded,
         0 otherwise (unitless)
 
     
 TARGET-BASED MODEL
-    min x^T A x + b^T w
+    min x^T A x + b^T v
 s.t.
-    S x + W w >= z_target
+    S x + W v >= z_target
     x >= 0
-    w binary
+    v binary
     W = (S*L*F)
 
     
 BUDGET-BASED MODEL
-    max c^T ( S x + W w )
+    max c^T ( S x + W v )
 s.t.
-    x^T A x + b^T w <= budget
+    x^T A x + b^T v <= budget
     x >= 0
-    w binary
+    v binary
     W = (S*L*F)
 
 ================================================
@@ -48,11 +48,12 @@ def solveTBModel(ztarget:list, fixed_params: dict, calculated_params: dict) -> d
         w - Vector of binary variuables (unitless)
 
     MODEL
-        min x^T A x + b^T w
+        min x^T A x + b^T v
     s.t.
-        S x + W w >= z_target
+        S x + W v >= z_target
+        x <= c
         x >= 0
-        w binary
+        v binary
         W = (S*L*F)
 
     """
@@ -61,105 +62,115 @@ def solveTBModel(ztarget:list, fixed_params: dict, calculated_params: dict) -> d
 
     # DECISION VARIABLES
     x = cvxpy.Variable(shape=params["n_regions"], name="x")
-    w = cvxpy.Variable(shape=params["n_wwtps"], integer=True, name="w")
+    v = cvxpy.Variable(shape=params["n_wwtps"], integer=True, name="v")
 
     # SOLVER
     model = cvxpy.Problem(
-        cvxpy.Minimize(cvxpy.quad_form(x, params["A"]) + params["b"].T @ w),
+        cvxpy.Minimize(cvxpy.quad_form(x, params["A"]) + params["b"].T @ v),
         [
-            params["S"] @ x + params["W"] @ w >= ztarget,
-            w <= params["u_w"],
-            w >= 0,
+            params["S"] @ x + params["W"] @ v >= ztarget,
+            v <= params["u_w"],
+            v >= 0,
+            x <= params["c"],
             x >= 0,
         ],
     )
+    
     model.solve(solver="SCIP", verbose=False)
     output = getResponseTemplate()
+    output["status"] = model.status
 
     if model.status not in ["infeasible", "unbounded"]:
-        output["status"] = model.status
         output["solution"]["solve_time"]["value"] = model._solve_time
         output["solution"]["obj"]["value"] = model.value
         output["solution"]["x"]["value"] = x.value.tolist()
-        output["solution"]["z"]["value"] = (params["S"] @ x.value).tolist()
-        output["solution"]["w"]["value"] = [ int(entry) for entry in (params["L"] @ w.value).round()]
-        output["solution"]["wabate"]["value"] = (params["L"] @ params["F"] @ w.value).round(4).tolist()
-        output["solution"]["allw"]["value"] =  [int(entry) for entry in w.value.round()]
+        output["solution"]["v"]["value"] = [ int(entry) for entry in v.value.round()]
+        output["solution"]["v_regional"]["value"] = [ int(entry) for entry in (params["L"] @ v.value).round()]
+        output["solution"]["z"]["value"] = (params["S"] @ x.value + params["W"] @ v.value).tolist()
+        output["solution"]["wwtp_abate"]["value"] = (params["L"] @ params["F"] @ v.value).round(4).tolist()
+        output["solution"]["cost"]["value"] = model.value
         output["message"] = "Solution found."
-        print(f"SUCCESS   TBM\tObjFun: {model.value:.4g} | Solve time: {model._solve_time:4g} sec | ", time.strftime("%Y-%m-%d %H:%M:%S"))
+        print(f"SUCCESS   TBM\tObjFun: {model.value:.4g} |", time.strftime("%Y-%m-%d %H:%M:%S"))
     else:
+        output["message"] = "No solution found."
         print("FAIL   TBM", time.strftime("%Y-%m-%d %H:%M:%S"))
     return output
 
 
 
-def solveBBModel(budget: float, fixed_params: dict, calculated_params: dict) -> dict:
+def solveBCModel(budget: float, fixed_params: dict, calculated_params: dict) -> dict:
     """
         DECISION VARIABLES
         x - Agro abatement by region (metric tonnes per year)
-        w - Vector of binary variuables (unitless)
+        v - Vector of binary variuables (unitless)
 
     MODEL
-        max c^T ( S x + W w )
+        max c^T ( S x + W v )
     s.t.
-        x^T A x + b^T w <= budget
+        x^T A x + b^T v <= budget
+        x <= c
         x >= 0
-        w binary
+        v binary
         W = (S*L*F)
     """
     params = {**fixed_params, **calculated_params}
 
     # DECISION VARIABLES
     x = cvxpy.Variable(shape=params["n_regions"], name="x")
-    w = cvxpy.Variable(shape=params["n_wwtps"], integer=True, name="w")
+    v = cvxpy.Variable(shape=params["n_wwtps"], integer=True, name="v")
 
     # SOLVER
     weight = array([1, 8, 1, 60, 600, 300])
     weight = weight / weight.sum()
     model = cvxpy.Problem(
-        cvxpy.Maximize(weight.T @ params["S"] @ x + weight.T @ params["W"] @ w),
+        cvxpy.Maximize(weight.T @ params["S"] @ x + weight.T @ params["W"] @ v),
         [
-            cvxpy.quad_form(x, params["A"]) + params["b"].T @ w <= budget,
-            w <= params["u_w"],
-            w >= 0,
+            cvxpy.quad_form(x, params["A"]) + params["b"].T @ v <= budget,
+            v <= params["u_w"],
+            v >= 0,
+            x <= params["c"],
             x >= 0,
         ],
     )
     model.solve(solver="SCIP", verbose=False)
     output = getResponseTemplate()
+    output["status"] = model.status
+    output["model_type"] = "Budget-Constrained"
 
     if model.status not in ["infeasible", "unbounded"]:
-        output["status"] = model.status
         output["solution"]["solve_time"]["value"] = model._solve_time
         output["solution"]["obj"]["value"] = model.value
         output["solution"]["obj"]["units"] = "ppb (weighted average)"
         output["solution"]["x"]["value"] = x.value.tolist()
-        output["solution"]["z"]["value"] = (params["S"] @ x.value).tolist()
-        output["solution"]["w"]["value"] = [ int(entry) for entry in (params["L"] @ w.value).round()]
-        output["solution"]["wabate"]["value"] = (params["L"] @ params["F"] @ w.value).round(4).tolist()
-        output["solution"]["allw"]["value"] =  [int(entry) for entry in w.value.round()]
+        output["solution"]["v"]["value"] = [ int(entry) for entry in v.value.round()]
+        output["solution"]["v_regional"]["value"] = [ int(entry) for entry in (params["L"] @ v.value).round()]
+        output["solution"]["z"]["value"] = (params["S"] @ x.value + params["W"] @ v.value).tolist()
+        output["solution"]["wwtp_abate"]["value"] = (params["L"] @ params["F"] @ v.value).round(4).tolist()
+        output["solution"]["cost"]["value"] = (x.T @ params["A"] @ x + params["b"].T @ v).value
         output["message"] = "Solution found."
-        print(f"SUCCESS   BBM\tObjFun: {model.value:.4g} |", time.strftime("%Y-%m-%d %H:%M:%S"))
+        print(f"SUCCESS   BCM\tObjFun: {model.value:.4g} |", time.strftime("%Y-%m-%d %H:%M:%S"))
     else:
-        output["status"] = model.status
-        print("FAIL   BBM", time.strftime("%Y-%m-%d %H:%M:%S"))
+        output["message"] = "No solution found."
+        print("FAIL     BCM", time.strftime("%Y-%m-%d %H:%M:%S"))
     return output
 
 
 
 def getResponseTemplate() -> dict:
     return {
-        "status": False,
+        "status": "",
+        "model_type": "Target-Based",
+        "message": "No feasible solution found.",
         "solution": {
             "solve_time": {"units": "sec", "value": 0.0},
             "obj": {"units": "million CAD/year", "value": 0.0},
             "x": {"units": "t/year", "value": []},
+            "v": {"units": "unitless", "value": []},
+            "v_regional": {"units": "plants", "value": []},
             "z": {"units": "ppb", "value": []},
-            "w": {"units": "plants", "value": []},
-            "wabate": {"units": "t/year", "value": []},
-            "allw": {"units": "unitless", "value": []}
-        },
-        "message": "No feasible solution found."
+            "wwtp_abate": {"units": "t/year", "value": []},
+            "cost": {"units": "million CAD/year", "value": 0.0},
+        }
     }
 
 
