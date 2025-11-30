@@ -182,7 +182,7 @@
         <div class="text-center mt-4">
             {% if not error %}
             <button id="downloadJson" class="btn btn-success btn-lg me-3 mb-3">
-                <i class="bi bi-download"></i> Download (JSON)
+                <i class="bi bi-download"></i> Download (ZIP)
             </button>
             {% endif %}
             <a href="/optimize" class="btn btn-primary btn-lg mb-3">
@@ -196,6 +196,8 @@
 </div>
 
 {% if not error %}
+<script src="/static/js/jszip.min.js"></script>
+<script src="/static/js/FileSaver.min.js"></script>
 <script>
 document.getElementById('downloadJson').addEventListener('click', function() {
     const data = {
@@ -203,22 +205,59 @@ document.getElementById('downloadJson').addEventListener('click', function() {
         results: {{ results | tojson }}
     };
     
-    const jsonStr = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    
-    // Create filename with timestamp
+    // Create timestamp
     const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
-    // e.g., "Budget-Constrained" -> bcm, "Target-Based" -> tbm
-    const modelType = data.model_info.type[0] + data.model_info.type[data.model_info.type.indexOf('-') + 1] + 'm';
-    a.download = `${modelType.toLowerCase()}_${timestamp}.json`;
+    const modelType = 'leam_' + data.model_info.type[0] + data.model_info.type[data.model_info.type.indexOf('-') + 1] + 'm';
     
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // Create metadata.txt content
+    const metadata = `Lake Erie Abatement Model (LEAM) - Results
+================================================
+Model Type: ${data.model_info.type}
+Status: ${data.model_info.status}
+${data.model_info.type === "Target-Based" ? 
+    `Total Cost: $${data.model_info.objective.toFixed(2)} ${data.model_info.objective_units}` :
+    `Objective Value: ${data.model_info.objective.toFixed(4)} ${data.model_info.objective_units}
+Total Cost: $${data.model_info.total_cost.toFixed(2)} million CAD`}
+Solve Time: ${data.model_info.solve_time} seconds
+Timestamp: ${new Date().toISOString()}
+
+Summary
+================================================
+Total Agricultural Abatement: ${data.results.total_agro_abatement.toFixed(1)} tonnes P/year
+Total WWTP Abatement: ${data.results.total_wwtp_abatement.toFixed(1)} tonnes P/year
+Total WWTPs Upgraded: ${data.results.total_wwtps} facilities
+Total TP Removed From Water Bodies: ${data.results.total_steadystate_mass_change.toFixed(1)} tonnes
+
+Column Units for solution.csv
+================================================
+agriculture_P_abate: tonnes P/year
+wwtp_P_abate: tonnes P/year
+n_wwtp: number of facilities upgraded (unitless)
+concentration_decrease: ppb
+P_mass_change: tonnes of P removed from water body
+`;
+    // Create solution.csv content
+    const regions = ['SCR', 'LSC', 'DR', 'WB', 'CB', 'EB'];
+    let csvContent = 'region,agriculture_P_abate,wwtp_P_abate,n_wwtp,concentration_decrease,P_mass_change\n';
+    
+    regions.forEach(region => {
+        csvContent += `${region},`;
+        csvContent += `${data.results.agricultural_abatement[region].toFixed(2)},`;
+        csvContent += `${data.results.wwtp_abatement[region].toFixed(2)},`;
+        csvContent += `${data.results.wwtp_upgrades[region]},`;
+        csvContent += `${data.results.concentration_change[region].toFixed(4)},`;
+        csvContent += `${data.results.steadystate_mass_change[region].toFixed(4)}\n`;
+    });
+    
+    // Create ZIP file
+    const zip = new JSZip();
+    zip.file('metadata.txt', metadata);
+    zip.file('solution.csv', csvContent);
+    
+    // Generate and download ZIP
+    zip.generateAsync({type: 'blob'}).then(function(content) {
+        saveAs(content, `${modelType.toLowerCase()}_${timestamp}.zip`);
+    });
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
