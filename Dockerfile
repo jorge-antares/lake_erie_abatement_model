@@ -7,27 +7,19 @@ WORKDIR /app
 
 # Install SCIP and build dependencies for ARM compatibility ---------
 RUN apt-get update && apt-get install -y \
-    wget \
     build-essential \
-    cmake \
-    libgmp-dev \
-    libreadline-dev \
-    libncurses-dev \
     zlib1g-dev \
-    libbz2-dev \
-    libboost-dev \
+    libreadline-dev \
+    libxml2-dev \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install SCIP
-RUN wget https://www.scipopt.org/download/release/scipoptsuite-9.2.3.tgz \
-    && tar xzf scipoptsuite-9.2.3.tgz \
-    && cd scipoptsuite-9.2.3 \
-    && mkdir build && cd build \
-    && cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local \
-    && make -j$(nproc) \
-    && make install \
-    && cd ../.. \
-    && rm -rf scipoptsuite-9.2.3*
+# Copy the downloaded SCIP Debian package into the container
+COPY SCIPOptSuite-*.deb /tmp/scip_install.deb
+
+# Install the SCIP suite using dpkg and remove the installer file
+RUN dpkg -i /tmp/scip_install.deb \
+    && rm /tmp/scip_install.deb
 # ------------------------------------------------------------------
 
 # Non-privileged user
