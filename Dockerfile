@@ -9,6 +9,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     wget \
     build-essential \
+    cmake \
     libgmp-dev \
     libreadline-dev \
     libncurses-dev \
