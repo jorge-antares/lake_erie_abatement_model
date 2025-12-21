@@ -9,6 +9,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     wget \
     build-essential \
+    python3-dev \
     cmake \
     libgmp-dev \
     libreadline-dev \
@@ -25,10 +26,7 @@ RUN apt-get update && apt-get install -y \
     && make -j$(nproc) \
     && make install \
     && cd ../.. \
-    && rm -rf scipoptsuite-9.2.4* \
-    && apt-get remove --purge -y wget build-essential cmake \
-    && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf scipoptsuite-9.2.4*
 # -------------------------------
 
 # Non-privileged user
@@ -47,6 +45,10 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=api/requirements.txt,target=requirements.txt \
     python -m pip install -r requirements.txt
 
+# Remove build tools to slim image after wheels are built
+RUN apt-get remove --purge -y wget cmake build-essential python3-dev \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
 COPY api/ .
 COPY eriemodel/ ./eriemodel/
 
