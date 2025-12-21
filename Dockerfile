@@ -5,22 +5,30 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Install SCIP and build dependencies for ARM compatibility ---------
+# ARM 64 compatibility ----------
 RUN apt-get update && apt-get install -y \
+    wget \
     build-essential \
-    zlib1g-dev \
+    cmake \
+    libgmp-dev \
     libreadline-dev \
-    libxml2-dev \
-    libgomp1 \
+    libncurses-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libboost-dev \
+    && wget https://scipopt.org/download/release/scipoptsuite-9.2.4.tgz \
+    && tar xzf scipoptsuite-9.2.4.tgz \
+    && cd scipoptsuite-9.2.4 \
+    && mkdir build && cd build \
+    && cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local \
+    && make -j$(nproc) \
+    && make install \
+    && cd ../.. \
+    && rm -rf scipoptsuite-9.2.4* \
+    && apt-get remove --purge -y wget build-essential cmake \
+    && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
-
-# Copy the downloaded SCIP Debian package into the container
-COPY SCIPOptSuite-*.deb /tmp/scip_install.deb
-
-# Install the SCIP suite using dpkg and remove the installer file
-RUN dpkg -i /tmp/scip_install.deb \
-    && rm /tmp/scip_install.deb
-# ------------------------------------------------------------------
+# -------------------------------
 
 # Non-privileged user
 ARG UID=10001
