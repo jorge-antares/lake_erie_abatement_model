@@ -78,7 +78,7 @@ def solveTBModel(ztarget:list, fixed_params: dict, calculated_params: dict) -> d
         ],
     )
     
-    model.solve(solver="SCIP", verbose=False)
+    model.solve( verbose=False) #solver="SCIP",
     output = getResponseTemplate()
     output["status"] = model.status
 
@@ -134,7 +134,7 @@ def solveBCModel(budget: float, fixed_params: dict, calculated_params: dict) -> 
             x >= 0,
         ],
     )
-    model.solve(solver="SCIP", verbose=False)
+    model.solve( verbose=False)
     output = getResponseTemplate()
     output["status"] = model.status
     output["model_type"] = "Budget-Constrained"
