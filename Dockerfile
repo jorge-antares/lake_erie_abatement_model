@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y \
     && tar xzf scipoptsuite-9.2.4.tgz \
     && cd scipoptsuite-9.2.4 \
     && mkdir build && cd build \
-    && cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local \
+    && cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DIPOPT=off \
     && make -j$(nproc) \
     && make install \
     && cd ../.. \
