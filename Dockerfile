@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     libbz2-dev \
     libboost-dev \
+    libtbb-dev \
     && wget https://scipopt.org/download/release/scipoptsuite-9.2.4.tgz \
     && tar xzf scipoptsuite-9.2.4.tgz \
     && cd scipoptsuite-9.2.4 \
