@@ -19,15 +19,15 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install SCIP
-RUN wget https://www.scipopt.org/download/release/scipoptsuite-9.1.1.tgz \
-    && tar xzf scipoptsuite-9.1.1.tgz \
-    && cd scipoptsuite-9.1.1 \
+RUN wget https://www.scipopt.org/download/release/scipoptsuite-9.2.3.tgz \
+    && tar xzf scipoptsuite-9.2.3.tgz \
+    && cd scipoptsuite-9.2.3 \
     && mkdir build && cd build \
     && cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local \
     && make -j$(nproc) \
     && make install \
     && cd ../.. \
-    && rm -rf scipoptsuite-9.1.1*
+    && rm -rf scipoptsuite-9.2.3*
 # ------------------------------------------------------------------
 
 # Non-privileged user
