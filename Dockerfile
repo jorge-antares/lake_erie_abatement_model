@@ -67,8 +67,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libtbb12 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy SCIP shared libraries and installed Python packages from builder
+# Copy SCIP shared libraries, installed Python packages, and executables from builder
 COPY --from=builder /usr/local/lib/ /usr/local/lib/
+COPY --from=builder /usr/local/bin/ /usr/local/bin/
 RUN ldconfig
 
 COPY api/ .
