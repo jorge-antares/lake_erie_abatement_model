@@ -1,20 +1,20 @@
 name: leam
 
 services:
-  model:
+  api:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: api
+    container_name: apicont
     restart: unless-stopped
     networks:
       - net
     expose:
       - "8000"
 
-  nginx:
+  ngx:
     image: nginx:1.29.3-alpine-slim
-    container_name: ngx
+    container_name: ngxcont
     restart: unless-stopped
     ports:
       - "80:80"
@@ -26,7 +26,8 @@ services:
     networks:
       - net
     depends_on:
-      - model
+      api:
+        condition: service_healthy
 
 networks:
   net:
