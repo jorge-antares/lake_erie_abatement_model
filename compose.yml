@@ -28,25 +28,6 @@ services:
     depends_on:
       - model
 
-  fail2ban:
-    image: linuxserver/fail2ban:1.1.0
-    container_name: f2b
-    network_mode: host
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=America/Toronto
-    volumes:
-      - ./fail2ban/config:/config
-      - ./fail2ban/log:/var/log:ro
-      - ./nginx/log:/remotelogs/nginx:ro
-    restart: unless-stopped
-    depends_on:
-      - nginx
-
 networks:
   net:
     driver: bridge
