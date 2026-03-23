@@ -25,8 +25,8 @@ RUN wget -q https://scipopt.org/download/release/scipoptsuite-9.2.4.tgz \
     && cmake .. \
           -DCMAKE_INSTALL_PREFIX=/usr/local \
           -DIPOPT=off \
+          -DPAPILO=off \
           -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_DISABLE_FIND_PACKAGE_Boost=TRUE \
     && make -j$(nproc) \
     && make install \
     && cd ../.. \
