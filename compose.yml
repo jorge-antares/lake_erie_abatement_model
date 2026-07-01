@@ -13,7 +13,7 @@ services:
       - "8000"
 
   ngx:
-    image: nginx:1.29.3-alpine-slim
+    image: nginx:1.31.2-alpine-slim
     container_name: ngxcont
     restart: unless-stopped
     ports:
@@ -21,8 +21,8 @@ services:
       - "443:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/log:/var/log/nginx
       - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/log:/var/log/nginx
     networks:
       - net
     depends_on:
